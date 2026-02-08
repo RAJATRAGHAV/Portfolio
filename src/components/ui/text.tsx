@@ -14,7 +14,7 @@ export type TextVariant =
 
 export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   variant?: TextVariant;
-  as?: keyof JSX.IntrinsicElements;
+  as?: keyof React.JSX.IntrinsicElements;
   children: React.ReactNode;
 }
 
@@ -31,7 +31,7 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
  */
 export const Text = React.forwardRef<HTMLElement, TextProps>(
   ({ variant = "body", as, className, children, style, ...props }, ref) => {
-    const Component = as || getDefaultElement(variant);
+    const Component = (as || getDefaultElement(variant)) as keyof React.JSX.IntrinsicElements;
     const variantStyle = textStyles[variant];
 
     const combinedStyle: React.CSSProperties = {
@@ -43,15 +43,15 @@ export const Text = React.forwardRef<HTMLElement, TextProps>(
       ...style,
     };
 
-    return (
-      <Component
-        ref={ref as any}
-        className={cn(className)}
-        style={combinedStyle}
-        {...props}
-      >
-        {children}
-      </Component>
+    return React.createElement(
+      Component,
+      {
+        ref,
+        className: cn(className),
+        style: combinedStyle,
+        ...props,
+      },
+      children
     );
   },
 );
@@ -61,8 +61,8 @@ Text.displayName = "Text";
 /**
  * Helper function to determine the default HTML element for each variant
  */
-function getDefaultElement(variant: TextVariant): keyof JSX.IntrinsicElements {
-  const elementMap: Record<TextVariant, keyof JSX.IntrinsicElements> = {
+function getDefaultElement(variant: TextVariant): keyof React.JSX.IntrinsicElements {
+  const elementMap: Record<TextVariant, keyof React.JSX.IntrinsicElements> = {
     display: "h1",
     h1: "h1",
     h2: "h2",
