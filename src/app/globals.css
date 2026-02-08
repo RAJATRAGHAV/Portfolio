@@ -8,6 +8,20 @@
   --text: #0f172a;
   --muted: #475569;
   --accent: #0f766e;
+
+  /* Type Scale - Major Third (1.250) */
+  --text-xs: 0.64rem;
+  --text-sm: 0.8rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.563rem;
+  --text-2xl: 1.953rem;
+  --text-3xl: 2.441rem;
+  --text-4xl: 3.052rem;
+  --text-5xl: 3.815rem;
+  --text-6xl: 4.768rem;
+  --text-hero: 6rem;
+  --text-display: 7.5rem;
 }
 
 .dark {
@@ -24,6 +38,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.6;
 }
 
 h1,
@@ -31,6 +47,22 @@ h2,
 h3 {
   font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
   letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--text-5xl);
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: var(--text-3xl);
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: var(--text-xl);
+  line-height: 1.4;
 }
 
 html {
