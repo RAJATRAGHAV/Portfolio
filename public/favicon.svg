@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .bg { fill: #0b0b0c; }
+      .bd { fill: none; stroke: #ffffff18; stroke-width: 1; }
+      .lt { fill: #f4efe6; }
+      @media (prefers-color-scheme: light) {
+        .bg { fill: #efeae0; }
+        .bd { stroke: #00000018; }
+        .lt { fill: #0c0c0c; }
+      }
+    </style>
+  </defs>
+
+  <!-- background pill -->
+  <rect class="bg" width="32" height="32" rx="8"/>
+  <rect class="bd" x="0.5" y="0.5" width="31" height="31" rx="7.5"/>
+
+  <!-- italic R glyph — clean serif path -->
+  <text class="lt"
+    x="16" y="23"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-style="italic"
+    font-size="22"
+    font-weight="400"
+  >R</text>
+
+  <!-- lime accent dot top-right -->
+  <circle cx="25.5" cy="6.5" r="2.8" fill="#c8ff4d"/>
+</svg>

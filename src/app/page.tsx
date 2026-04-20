@@ -359,7 +359,7 @@ export default function Home() {
         </div>
 
         {/* display headline */}
-        <h1 className="display mt-6 text-[clamp(3.4rem,11vw,10.5rem)] md:mt-8">
+        <h1 className="display mt-6 text-[clamp(2.6rem,11vw,10.5rem)] md:mt-8">
           <span className="block">
             <RevealWords text="Agentic AI," />
           </span>
@@ -378,7 +378,7 @@ export default function Home() {
           </span>
         </h1>
 
-        <div className="mt-12 grid gap-10 border-t border-[var(--line)] pt-10 md:grid-cols-[1.15fr_0.85fr] md:gap-16">
+        <div className="mt-12 grid gap-10 border-t border-[var(--line)] pt-10 md:grid-cols-[1.15fr_0.85fr] md:gap-16 md:items-center">
           <FadeUp delay={0.45}>
             <p className="max-w-xl text-[17px] leading-[1.55] text-[var(--ink-soft)] md:text-[19px]">
               I&rsquo;m{" "}
@@ -413,7 +413,9 @@ export default function Home() {
                     </>
                   ) : (
                     <>
-                      <Copy className="h-4 w-4" /> {EMAIL}
+                      <Copy className="h-4 w-4" />
+                      <span className="hidden sm:inline">{EMAIL}</span>
+                      <span className="sm:hidden">Copy email</span>
                     </>
                   )}
                 </button>
@@ -421,7 +423,7 @@ export default function Home() {
             </div>
           </FadeUp>
 
-          <FadeUp delay={0.6} className="flex items-center justify-center">
+          <FadeUp delay={0.6} className="hidden md:flex items-center justify-center">
             <div className="relative w-full max-w-[520px] opacity-90">
               <HeroGraph />
             </div>

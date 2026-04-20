@@ -53,7 +53,10 @@ export const metadata: Metadata = {
       "Agentic AI, contract intelligence, and production infrastructure. Shipping solo at enterprise scale.",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
+    ],
   },
 };
 
