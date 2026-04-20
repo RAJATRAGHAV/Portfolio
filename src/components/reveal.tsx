@@ -59,13 +59,17 @@ export function RevealWords({
       {words.map((word, i) => (
         <span key={`${word}-${i}`}>
           <span
-            className="relative inline-block overflow-hidden align-bottom"
-            style={{ lineHeight: "inherit" }}
+            className="relative inline-block"
+            style={{
+              lineHeight: "inherit",
+              verticalAlign: "bottom",
+              clipPath: "inset(-10% -2% -30% -2%)",
+            }}
           >
             <motion.span
               className="inline-block will-change-transform"
-              initial={{ y: "110%" }}
-              animate={inView ? { y: "0%" } : { y: "110%" }}
+              initial={{ y: "150%" }}
+              animate={inView ? { y: "0%" } : { y: "150%" }}
               transition={{
                 duration: 0.9,
                 ease: [0.22, 1, 0.36, 1],

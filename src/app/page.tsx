@@ -11,6 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Cursor } from "@/components/cursor";
+import { HeroGraph } from "@/components/hero-graph";
 import { LiveClock } from "@/components/live-clock";
 import { Magnetic } from "@/components/magnetic";
 import { Marquee } from "@/components/marquee";
@@ -292,8 +293,43 @@ export default function Home() {
       {/* ============================================================ */}
       <motion.section
         style={{ y: heroY, opacity: heroOpacity }}
-        className="relative mx-auto flex w-full max-w-container flex-col px-6 pb-10 pt-28 md:px-10 md:pb-14 md:pt-32"
+        className="relative overflow-hidden"
       >
+        {/* background layer */}
+        <div className="pointer-events-none absolute inset-0 select-none">
+          {/* dot grid */}
+          <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="hero-dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+                <circle cx="1.5" cy="1.5" r="1" fill="var(--ink)" opacity="0.18" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hero-dots)" />
+          </svg>
+          {/* orb 1 — lime top-left */}
+          <motion.div
+            className="absolute -left-48 -top-32 h-[560px] w-[560px] rounded-full"
+            style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)", opacity: 0.13, filter: "blur(80px)" }}
+            animate={{ x: [0, 40, -20, 0], y: [0, -30, 50, 0] }}
+            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* orb 2 — teal right */}
+          <motion.div
+            className="absolute -right-64 top-1/3 h-[500px] w-[500px] rounded-full"
+            style={{ background: "radial-gradient(circle, #0a5c4a 0%, transparent 70%)", opacity: 0.22, filter: "blur(90px)" }}
+            animate={{ x: [0, -50, 30, 0], y: [0, 40, -40, 0] }}
+            transition={{ duration: 28, repeat: Infinity, ease: "easeInOut" }}
+          />
+          {/* orb 3 — lime faint bottom-center */}
+          <motion.div
+            className="absolute bottom-0 left-1/2 h-[360px] w-[360px] -translate-x-1/2 rounded-full"
+            style={{ background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)", opacity: 0.07, filter: "blur(70px)" }}
+            animate={{ scale: [1, 1.15, 1], opacity: [0.07, 0.11, 0.07] }}
+            transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          />
+        </div>
+
+        <div className="relative mx-auto flex w-full max-w-container flex-col px-6 pb-10 pt-28 md:px-10 md:pb-14 md:pt-32">
         {/* top meta strip */}
         <div className="flex items-center justify-between text-[var(--muted)]">
           <FadeUp delay={0.1}>
@@ -385,55 +421,20 @@ export default function Home() {
             </div>
           </FadeUp>
 
-          <FadeUp delay={0.6}>
-            <div className="relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
-              <div className="mono flex items-center justify-between text-[var(--muted)]">
-                <span>
-                  <span className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-[var(--accent)]" />
-                  Transmission
-                </span>
-                <span className="blink">●</span>
-              </div>
-
-              <div className="mt-5 space-y-2 font-[ui-monospace] text-[12px] leading-[1.6] text-[var(--ink-soft)]">
-                <div className="text-[var(--muted)]">
-                  $ status --project bulk-analyzer
-                </div>
-                <div>
-                  <span className="text-[var(--accent)]">ok</span> ingest ·
-                  1,041,287 docs
-                </div>
-                <div>
-                  <span className="text-[var(--accent)]">ok</span> langgraph ·
-                  state=healthy
-                </div>
-                <div>
-                  <span className="text-[var(--accent)]">ok</span> qdrant ·
-                  p95=42ms
-                </div>
-                <div>
-                  <span className="text-[var(--accent)]">ok</span> celery ·
-                  workers=12
-                </div>
-                <div className="text-[var(--muted)]">$ now playing</div>
-                <div className="flex items-center gap-2">
-                  <span className="italic-serif text-[var(--ink)]">
-                    &ldquo;Designing agents that survive production&rdquo;
-                  </span>
-                </div>
-                <div className="text-[var(--muted)]">— working draft</div>
-              </div>
-
+          <FadeUp delay={0.6} className="flex items-center justify-center">
+            <div className="relative w-full max-w-[520px] opacity-90">
+              <HeroGraph />
             </div>
           </FadeUp>
         </div>
 
-        <div className="mt-auto flex items-center justify-between pb-8 pt-14 text-[var(--muted)]">
-          <span className="mono">Scroll</span>
-          <span className="mono animate-pulse">↓</span>
-          <span className="mono hidden md:inline">
-            § Work · About · Papers · Contact
-          </span>
+          <div className="mt-auto flex items-center justify-between pb-8 pt-14 text-[var(--muted)]">
+            <span className="mono">Scroll</span>
+            <span className="mono animate-pulse">↓</span>
+            <span className="mono hidden md:inline">
+              § Work · About · Papers · Contact
+            </span>
+          </div>
         </div>
       </motion.section>
 
@@ -1232,113 +1233,182 @@ function ProjectVisual({
         transition={{ duration: 0.4 }}
       >
         <svg viewBox="0 0 200 140" className="h-full w-full" fill="none">
+
+          {/* ── Bulk Analyzer: batch pipeline ─────────────────────────── */}
           {kind === "graph" && (
             <g>
-              {/* static edges */}
-              <line x1="28" y1="70" x2="100" y2="36" stroke={stroke} strokeWidth="0.8" />
-              <line x1="28" y1="70" x2="100" y2="104" stroke={stroke} strokeWidth="0.8" />
-              <line x1="100" y1="36" x2="172" y2="70" stroke={stroke} strokeWidth="0.8" />
-              <line x1="100" y1="104" x2="172" y2="70" stroke={stroke} strokeWidth="0.8" />
-              <line x1="100" y1="36" x2="100" y2="104" stroke={stroke} strokeWidth="0.6" strokeDasharray="2 2" />
-              {/* animated accent path */}
-              <motion.path
-                d="M28,70 L172,70"
-                stroke={accent} strokeWidth="1.5" strokeDasharray="3 4"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: active ? 1 : 0, opacity: active ? 1 : 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              />
-              {/* nodes */}
-              <circle cx="28" cy="70" r="7" fill="var(--bg)" stroke={stroke} strokeWidth="1" />
-              <circle cx="100" cy="36" r="7" fill="var(--bg)" stroke={stroke} strokeWidth="1" />
-              <circle cx="100" cy="104" r="7" fill="var(--bg)" stroke={stroke} strokeWidth="1" />
-              <motion.circle
-                cx="172" cy="70" r="7"
-                fill={accent}
-                animate={{ r: active ? 9 : 7 }}
-                transition={{ duration: 0.4 }}
-              />
-              {/* node labels */}
-              <text x="28" y="74" textAnchor="middle" fontSize="6" fill="var(--bg)" fontFamily="ui-monospace">A</text>
-              <text x="100" y="40" textAnchor="middle" fontSize="6" fill={stroke} fontFamily="ui-monospace">B</text>
-              <text x="100" y="108" textAnchor="middle" fontSize="6" fill={stroke} fontFamily="ui-monospace">C</text>
-            </g>
-          )}
+              {/* 3 input documents */}
+              {([14, 46, 78] as number[]).map((y, i) => (
+                <g key={i}>
+                  <rect x={8} y={y} width={32} height={24} rx={2}
+                    fill="var(--bg)" stroke={stroke} strokeWidth={0.8} />
+                  <line x1={13} y1={y + 8}  x2={34} y2={y + 8}  stroke={stroke} strokeWidth={0.6} opacity={0.5} />
+                  <line x1={13} y1={y + 13} x2={30} y2={y + 13} stroke={stroke} strokeWidth={0.6} opacity={0.5} />
+                  <line x1={13} y1={y + 18} x2={32} y2={y + 18} stroke={stroke} strokeWidth={0.6} opacity={0.5} />
+                  {/* connector line → center */}
+                  <line x1={40} y1={y + 12} x2={80} y2={68}
+                    stroke={stroke} strokeWidth={0.6} strokeDasharray="2 2" />
+                  {/* travelling packet */}
+                  <motion.circle r={2.5} fill={accent}
+                    initial={{ cx: 40, cy: y + 12, opacity: 0 }}
+                    animate={{ cx: [40, 80], cy: [y + 12, 68], opacity: [0, 1, 1, 0] }}
+                    transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 2,
+                      delay: i * 0.55, ease: "easeInOut", times: [0, 0.1, 0.9, 1] }}
+                  />
+                </g>
+              ))}
 
-          {kind === "loop" && (
-            <g>
-              {/* rotating dashed ring */}
+              {/* center processor */}
+              <circle cx={100} cy={68} r={18}
+                fill="var(--surface)" stroke={stroke} strokeWidth={0.8} />
               <motion.g
                 animate={{ rotate: active ? 360 : 0 }}
-                transition={{ duration: 6, repeat: active ? Infinity : 0, ease: "linear" }}
-                style={{ transformOrigin: "100px 70px" }}
+                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                style={{ transformOrigin: "100px 68px" }}
               >
-                <circle cx="100" cy="70" r="44" stroke={stroke} strokeWidth="0.8" strokeDasharray="4 4" fill="none" />
+                <circle cx={100} cy={68} r={18}
+                  fill="none" stroke={accent} strokeWidth={1.2}
+                  strokeDasharray="5 9" opacity={0.7} />
               </motion.g>
-              {/* orbit dot */}
-              <motion.circle
-                cx="100" cy="26"
-                r="6"
-                fill={accent}
-                animate={{ opacity: active ? 1 : 0.5 }}
-                transition={{ duration: 0.4 }}
-              />
-              <circle cx="144" cy="70" r="4" fill={stroke} opacity="0.6" />
-              <circle cx="100" cy="114" r="4" fill={stroke} opacity="0.6" />
-              <circle cx="56" cy="70" r="4" fill={stroke} opacity="0.6" />
-              {/* center label */}
-              <circle cx="100" cy="70" r="16" stroke={stroke} strokeWidth="0.6" fill="var(--bg)" />
-              <text x="100" y="73" textAnchor="middle" fontSize="8" fill={stroke} fontFamily="ui-monospace">loop</text>
-            </g>
-          )}
+              <motion.circle cx={100} cy={68} r={5} fill={accent}
+                animate={{ r: active ? [5, 7, 5] : 5 }}
+                transition={{ duration: 1.6, repeat: Infinity }} />
 
-          {kind === "stack" && (
-            <g>
-              {([
-                [140, 10],
-                [110, 22],
-                [125, 34],
-                [95, 46],
-              ] as [number, number][]).map(([w, y], i) => (
-                <motion.rect
-                  key={i}
-                  x={(200 - w) / 2}
-                  y={y + 38}
-                  width={w}
-                  height={11}
-                  rx={2}
-                  stroke={stroke}
-                  strokeWidth="0.8"
-                  fill={i === 0 ? accent : "transparent"}
-                  animate={{ width: active ? w : w * 0.85, x: active ? (200 - w) / 2 : (200 - w * 0.85) / 2 }}
-                  transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
+              {/* center → output connector */}
+              <line x1={118} y1={68} x2={148} y2={68}
+                stroke={stroke} strokeWidth={0.6} strokeDasharray="2 2" />
+              <motion.circle r={2.5} fill={accent}
+                initial={{ cx: 118, cy: 68, opacity: 0 }}
+                animate={{ cx: [118, 148], cy: [68, 68], opacity: [0, 1, 1, 0] }}
+                transition={{ duration: 1, repeat: Infinity, repeatDelay: 2.2,
+                  delay: 1.6, ease: "easeInOut", times: [0, 0.1, 0.9, 1] }} />
+
+              {/* output bars */}
+              {([48, 76, 58] as number[]).map((h, i) => (
+                <motion.rect key={i}
+                  x={150 + i * 14} width={10} rx={2}
+                  fill={i === 1 ? accent : stroke} opacity={i === 1 ? 1 : 0.45}
+                  animate={{ height: active ? h : h * 0.3, y: active ? 110 - h : 110 - h * 0.3 }}
+                  transition={{ duration: 0.6, delay: 0.4 + i * 0.12,
+                    ease: [0.22, 1, 0.36, 1] }}
                 />
               ))}
-              {/* pulse dot */}
-              <motion.circle
-                cx="100" cy="112"
-                r="4"
-                fill={accent}
-                animate={{ opacity: active ? [0.4, 1, 0.4] : 0.3 }}
-                transition={{ duration: 1.6, repeat: Infinity }}
-              />
             </g>
           )}
 
-          {kind === "bars" && (
+          {/* ── Contract Review: clause scanner ───────────────────────── */}
+          {kind === "loop" && (
             <g>
-              {[30, 62, 44, 76, 52, 68, 38, 84, 56, 46].map((h, i) => (
-                <motion.rect
-                  key={i}
-                  x={16 + i * 17}
-                  width={11}
-                  rx={2}
-                  fill={i === 7 ? accent : stroke}
-                  style={{ transformBox: "fill-box", transformOrigin: "center bottom" }}
-                  initial={false}
-                  animate={{ height: active ? h : h * 0.45, y: active ? 108 - h : 108 - h * 0.45 }}
-                  transition={{ duration: 0.5, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
+              {/* document body */}
+              <rect x={14} y={8} width={76} height={122} rx={3}
+                fill="var(--bg)" stroke={stroke} strokeWidth={0.8} />
+              {/* clause lines */}
+              {([20, 34, 48, 62, 76, 90, 104, 118] as number[]).map((y, i) => (
+                <rect key={i} x={22} y={y} width={i % 3 === 0 ? 58 : i % 3 === 1 ? 46 : 52}
+                  height={4} rx={1} fill={stroke} opacity={0.22} />
+              ))}
+              {/* scanning beam */}
+              <motion.rect
+                x={14} width={76} height={12} rx={0}
+                fill={accent} opacity={0.1}
+                initial={{ y: 8 }}
+                animate={{ y: active ? [8, 118, 8] : 8 }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut",
+                  repeatDelay: 0.4 }}
+              />
+              <motion.line
+                x1={14} x2={90}
+                stroke={accent} strokeWidth={0.8} opacity={0.5}
+                initial={{ y1: 14, y2: 14 }}
+                animate={{ y1: active ? [14, 124, 14] : 14,
+                           y2: active ? [14, 124, 14] : 14 }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut",
+                  repeatDelay: 0.4 }}
+              />
+
+              {/* status dots (right of doc) */}
+              {([20, 34, 48, 62, 76, 90, 104, 118] as number[]).map((y, i) => {
+                const colors = [accent, accent, "#ef4444", accent, accent, "#f59e0b", accent, accent];
+                return (
+                  <motion.circle key={i}
+                    cx={104} cy={y + 2} r={4}
+                    fill={colors[i]}
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: active ? 1 : 0, scale: active ? 1 : 0 }}
+                    transition={{ delay: 0.2 + i * 0.35, duration: 0.25 }}
+                  />
+                );
+              })}
+
+              {/* risk score bar */}
+              <rect x={120} y={20} width={12} height={100} rx={2}
+                fill="var(--surface)" stroke={stroke} strokeWidth={0.6} />
+              <motion.rect x={120} width={12} rx={2} fill={accent}
+                animate={{ height: active ? 68 : 0, y: active ? 52 : 120 }}
+                transition={{ duration: 1.2, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              />
+              <text x={126} y={134} textAnchor="middle" fontSize={6.5}
+                fill="var(--muted)" fontFamily="ui-monospace">score</text>
+
+              {/* corner fold */}
+              <path d="M80,8 L90,18 L90,8 Z" fill={stroke} opacity={0.3} />
+              <line x1={80} y1={8} x2={90} y2={18} stroke={stroke} strokeWidth={0.6} />
+            </g>
+          )}
+
+          {/* ── Contract Generator: template → document ───────────────── */}
+          {kind === "stack" && (
+            <g>
+              {/* template stack (back → front) */}
+              {([
+                { x: 6,  y: 28, op: 0.25 },
+                { x: 10, y: 22, op: 0.45 },
+                { x: 14, y: 16, op: 1    },
+              ]).map((t, i) => (
+                <g key={i}>
+                  <rect x={t.x} y={t.y} width={56} height={82} rx={2}
+                    fill="var(--bg)" stroke={stroke}
+                    strokeWidth={0.8} opacity={t.op} />
+                </g>
+              ))}
+              {/* template content lines */}
+              {[0,1,2,3,4].map((i) => (
+                <rect key={i} x={20} y={30 + i * 11} rx={1} height={4}
+                  width={i === 0 ? 34 : i === 2 ? 40 : 28}
+                  fill={i === 0 ? accent : stroke}
+                  opacity={i === 0 ? 0.7 : 0.25} />
+              ))}
+
+              {/* animated arrow */}
+              <motion.path d="M74,68 L108,68" fill="none"
+                stroke={accent} strokeWidth={1.2} strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: active ? 1 : 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+              />
+              <motion.path d="M104,63 L110,68 L104,73" fill="none"
+                stroke={accent} strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round"
+                animate={{ opacity: active ? 1 : 0 }}
+                transition={{ duration: 0.3, delay: 0.5 }}
+              />
+
+              {/* output document */}
+              <rect x={112} y={8} width={78} height={120} rx={3}
+                fill="var(--bg)" stroke={active ? accent : stroke}
+                strokeWidth={active ? 1.2 : 0.8} />
+              {/* corner fold */}
+              <path d="M176,8 L190,22 L190,8 Z" fill={stroke} opacity={0.3} />
+              <line x1={176} y1={8} x2={190} y2={22} stroke={stroke} strokeWidth={0.6} />
+              {/* typed-in lines */}
+              {([52, 38, 48, 30, 44, 36, 42, 28] as number[]).map((w, i) => (
+                <motion.rect key={i}
+                  x={120} y={22 + i * 13} height={4} rx={1}
+                  fill={i === 0 ? accent : stroke}
+                  opacity={i === 0 ? 0.75 : 0.3}
+                  initial={{ width: 0 }}
+                  animate={{ width: active ? w : 0 }}
+                  transition={{ duration: 0.35, delay: 0.5 + i * 0.1,
+                    ease: [0.22, 1, 0.36, 1] }}
                 />
               ))}
             </g>
