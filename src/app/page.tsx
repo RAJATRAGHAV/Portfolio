@@ -346,7 +346,7 @@ export default function Home() {
           <FadeUp delay={0.45}>
             <p className="max-w-xl text-[17px] leading-[1.55] text-[var(--ink-soft)] md:text-[19px]">
               I&rsquo;m{" "}
-              <span className="italic-serif text-[var(--ink)]">Rajat</span> — a
+              <span className="italic-serif text-[var(--ink)]">Rajat</span>, a
               product engineer shipping{" "}
               <strong className="text-[var(--ink)]">three production AI systems</strong>{" "}
               that process <strong className="text-[var(--ink)]">1M+ contracts</strong>{" "}
@@ -498,7 +498,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="mono max-w-sm text-right text-[var(--muted)]">
-            Jan 2024 → now · Built and owned end-to-end.
+            Jan 2024 – now · Built and owned end-to-end.
           </div>
         </div>
 
@@ -549,7 +549,7 @@ export default function Home() {
                   <span className="italic-serif text-[var(--ink)]">
                     contract intelligence
                   </span>{" "}
-                  systems for enterprise legal teams — as the only engineer on
+                  systems for enterprise legal teams, as the only engineer on
                   the project. Client meetings on Monday, shipped by Friday.
                 </p>
                 <p>
@@ -566,7 +566,7 @@ export default function Home() {
                     distributed systems
                   </span>
                   . LangGraph state machines, Agentic RAG over Qdrant,
-                  RabbitMQ + Celery under FastAPI — all running on AWS behind
+                  RabbitMQ + Celery under FastAPI, all running on AWS behind
                   OpenTelemetry traces.
                 </p>
                 <p>
@@ -683,13 +683,13 @@ export default function Home() {
           <blockquote className="mx-auto max-w-4xl text-center">
             <div className="font-display text-[clamp(1.8rem,3.6vw,3rem)] leading-[1.2] text-[var(--ink)]">
               <span className="italic-serif text-[var(--muted)]">&ldquo;</span>
-              The best software feels inevitable — like the problem could only
+              The best software feels inevitable, like the problem could only
               have been solved this way. Everything else is{" "}
               <span className="italic-serif">scaffolding.</span>
               <span className="italic-serif text-[var(--muted)]">&rdquo;</span>
             </div>
             <div className="mono mt-6 text-[var(--muted)]">
-              — personal memo, 2024
+              personal memo, 2024
             </div>
           </blockquote>
         </FadeUp>
@@ -882,7 +882,7 @@ export default function Home() {
             </h2>
             <p className="mt-8 max-w-sm text-[15px] leading-[1.6] text-[var(--ink-soft)]">
               A few things I&rsquo;m asked often. If your question isn&rsquo;t
-              here, write to me — I answer every legitimate inbound within 48
+              here, write to me. I answer every legitimate inbound within 48
               hours.
             </p>
             <div className="mt-8">
@@ -1144,7 +1144,7 @@ function ProjectRow({
         className={`pointer-events-none absolute inset-0 -z-0 bg-gradient-to-r ${project.accent} opacity-[0.08]`}
       />
 
-      <div className="relative grid grid-cols-1 items-start gap-6 md:grid-cols-[90px_1.15fr_0.85fr_auto] md:gap-10">
+      <div className="relative grid grid-cols-1 items-start gap-6 md:grid-cols-[90px_1.15fr_0.85fr_auto] md:gap-10 p-4">
         <div className="mono pt-2 text-[var(--muted)]">{project.n}</div>
 
         <div>
@@ -1241,88 +1241,121 @@ function ProjectVisual({
   const accent = "var(--accent)";
 
   return (
-    <div className="relative h-28 w-full overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--surface-muted)]">
+    <div className="relative h-36 w-full overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--surface-muted)]">
       <motion.div
         className="absolute inset-0"
         initial={false}
-        animate={{ opacity: active ? 1 : 0.55 }}
-        transition={{ duration: 0.5 }}
+        animate={{ opacity: active ? 1 : 0.5 }}
+        transition={{ duration: 0.4 }}
       >
-        <svg viewBox="0 0 200 112" className="h-full w-full" fill="none">
+        <svg viewBox="0 0 200 140" className="h-full w-full" fill="none">
           {kind === "graph" && (
             <g>
-              <line x1="28" y1="56" x2="100" y2="32" stroke={stroke} strokeWidth="0.8" />
-              <line x1="28" y1="56" x2="100" y2="80" stroke={stroke} strokeWidth="0.8" />
-              <line x1="100" y1="32" x2="172" y2="56" stroke={stroke} strokeWidth="0.8" />
-              <line x1="100" y1="80" x2="172" y2="56" stroke={stroke} strokeWidth="0.8" />
-              <motion.line
-                x1="28" y1="56" x2="172" y2="56"
-                stroke={accent} strokeWidth="1.2" strokeDasharray="2 3"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: active ? 1 : 0 }}
-                transition={{ duration: 1 }}
+              {/* static edges */}
+              <line x1="28" y1="70" x2="100" y2="36" stroke={stroke} strokeWidth="0.8" />
+              <line x1="28" y1="70" x2="100" y2="104" stroke={stroke} strokeWidth="0.8" />
+              <line x1="100" y1="36" x2="172" y2="70" stroke={stroke} strokeWidth="0.8" />
+              <line x1="100" y1="104" x2="172" y2="70" stroke={stroke} strokeWidth="0.8" />
+              <line x1="100" y1="36" x2="100" y2="104" stroke={stroke} strokeWidth="0.6" strokeDasharray="2 2" />
+              {/* animated accent path */}
+              <motion.path
+                d="M28,70 L172,70"
+                stroke={accent} strokeWidth="1.5" strokeDasharray="3 4"
+                fill="none"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: active ? 1 : 0, opacity: active ? 1 : 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
               />
-              <circle cx="28" cy="56" r="6" fill="var(--bg)" stroke={stroke} />
-              <circle cx="100" cy="32" r="6" fill="var(--bg)" stroke={stroke} />
-              <circle cx="100" cy="80" r="6" fill="var(--bg)" stroke={stroke} />
-              <circle cx="172" cy="56" r="6" fill={accent} />
+              {/* nodes */}
+              <circle cx="28" cy="70" r="7" fill="var(--bg)" stroke={stroke} strokeWidth="1" />
+              <circle cx="100" cy="36" r="7" fill="var(--bg)" stroke={stroke} strokeWidth="1" />
+              <circle cx="100" cy="104" r="7" fill="var(--bg)" stroke={stroke} strokeWidth="1" />
+              <motion.circle
+                cx="172" cy="70" r="7"
+                fill={accent}
+                animate={{ r: active ? 9 : 7 }}
+                transition={{ duration: 0.4 }}
+              />
+              {/* node labels */}
+              <text x="28" y="74" textAnchor="middle" fontSize="6" fill="var(--bg)" fontFamily="ui-monospace">A</text>
+              <text x="100" y="40" textAnchor="middle" fontSize="6" fill={stroke} fontFamily="ui-monospace">B</text>
+              <text x="100" y="108" textAnchor="middle" fontSize="6" fill={stroke} fontFamily="ui-monospace">C</text>
             </g>
           )}
 
           {kind === "loop" && (
             <g>
-              <motion.circle
-                cx="100" cy="56" r="38"
-                stroke={stroke} strokeWidth="0.8" strokeDasharray="3 3"
-                fill="none"
+              {/* rotating dashed ring */}
+              <motion.g
                 animate={{ rotate: active ? 360 : 0 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                style={{ originX: "100px", originY: "56px" }}
+                transition={{ duration: 6, repeat: active ? Infinity : 0, ease: "linear" }}
+                style={{ transformOrigin: "100px 70px" }}
+              >
+                <circle cx="100" cy="70" r="44" stroke={stroke} strokeWidth="0.8" strokeDasharray="4 4" fill="none" />
+              </motion.g>
+              {/* orbit dot */}
+              <motion.circle
+                cx="100" cy="26"
+                r="6"
+                fill={accent}
+                animate={{ opacity: active ? 1 : 0.5 }}
+                transition={{ duration: 0.4 }}
               />
-              <circle cx="100" cy="18" r="5" fill={accent} />
-              <circle cx="138" cy="56" r="4" fill={stroke} />
-              <circle cx="100" cy="94" r="4" fill={stroke} />
-              <circle cx="62" cy="56" r="4" fill={stroke} />
-              <text x="100" y="60" textAnchor="middle" fontSize="9"
-                fill={stroke} className="font-[ui-monospace]">
-                loop
-              </text>
+              <circle cx="144" cy="70" r="4" fill={stroke} opacity="0.6" />
+              <circle cx="100" cy="114" r="4" fill={stroke} opacity="0.6" />
+              <circle cx="56" cy="70" r="4" fill={stroke} opacity="0.6" />
+              {/* center label */}
+              <circle cx="100" cy="70" r="16" stroke={stroke} strokeWidth="0.6" fill="var(--bg)" />
+              <text x="100" y="73" textAnchor="middle" fontSize="8" fill={stroke} fontFamily="ui-monospace">loop</text>
             </g>
           )}
 
           {kind === "stack" && (
             <g>
-              {[0, 1, 2, 3].map((i) => (
+              {([
+                [140, 10],
+                [110, 22],
+                [125, 34],
+                [95, 46],
+              ] as [number, number][]).map(([w, y], i) => (
                 <motion.rect
                   key={i}
-                  x={30} y={20 + i * 18}
-                  width={140} height={12} rx={2}
-                  stroke={stroke} strokeWidth="0.8"
-                  fill={i === 3 ? accent : "transparent"}
-                  initial={{ x: 30 }}
-                  animate={{ x: active ? 30 + (i % 2 === 0 ? 0 : 6) : 30 }}
-                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                  x={(200 - w) / 2}
+                  y={y + 38}
+                  width={w}
+                  height={11}
+                  rx={2}
+                  stroke={stroke}
+                  strokeWidth="0.8"
+                  fill={i === 0 ? accent : "transparent"}
+                  animate={{ width: active ? w : w * 0.85, x: active ? (200 - w) / 2 : (200 - w * 0.85) / 2 }}
+                  transition={{ duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] }}
                 />
               ))}
+              {/* pulse dot */}
+              <motion.circle
+                cx="100" cy="112"
+                r="4"
+                fill={accent}
+                animate={{ opacity: active ? [0.4, 1, 0.4] : 0.3 }}
+                transition={{ duration: 1.6, repeat: Infinity }}
+              />
             </g>
           )}
 
           {kind === "bars" && (
             <g>
-              {[22, 54, 38, 68, 46, 60, 32, 78, 50, 40].map((h, i) => (
+              {[30, 62, 44, 76, 52, 68, 38, 84, 56, 46].map((h, i) => (
                 <motion.rect
                   key={i}
-                  x={20 + i * 16}
-                  width={10}
-                  y={100 - h}
-                  height={h}
-                  rx={1}
+                  x={16 + i * 17}
+                  width={11}
+                  rx={2}
                   fill={i === 7 ? accent : stroke}
-                  opacity={0.85}
-                  initial={{ scaleY: 0.2 }}
-                  animate={{ scaleY: active ? 1 : 0.55 }}
-                  transition={{ duration: 0.5, delay: i * 0.03 }}
-                  style={{ transformOrigin: `${25 + i * 16}px 100px` }}
+                  style={{ transformBox: "fill-box", transformOrigin: "center bottom" }}
+                  initial={false}
+                  animate={{ height: active ? h : h * 0.45, y: active ? 108 - h : 108 - h * 0.45 }}
+                  transition={{ duration: 0.5, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
                 />
               ))}
             </g>

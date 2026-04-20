@@ -20,11 +20,11 @@ const siteUrl = "https://rajatraghav.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Rajat Raghav — Product Engineer · Agentic AI & Systems",
+    default: "Rajat Raghav, Product Engineer · Agentic AI & Systems",
     template: "%s · Rajat Raghav",
   },
   description:
-    "Product Engineer shipping three production AI systems that process 1M+ contracts — Agentic AI, LangGraph, FastAPI, AWS.",
+    "Product Engineer shipping three production AI systems that process 1M+ contracts. Agentic AI, LangGraph, FastAPI, AWS.",
   keywords: [
     "Rajat Raghav",
     "Product Engineer",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   creator: "Rajat Raghav",
   openGraph: {
     type: "website",
-    title: "Rajat Raghav — Product Engineer · Agentic AI & Systems",
+    title: "Rajat Raghav, Product Engineer · Agentic AI & Systems",
     description:
       "Three production AI systems, 1M+ contracts processed, LangGraph + FastAPI + AWS. Sole-engineer, end-to-end.",
     siteName: "Rajat Raghav",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rajat Raghav — Product Engineer",
+    title: "Rajat Raghav, Product Engineer",
     description:
       "Agentic AI, contract intelligence, and production infrastructure. Shipping solo at enterprise scale.",
   },
