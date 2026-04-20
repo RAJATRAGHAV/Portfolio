@@ -49,7 +49,7 @@ const projects: Project[] = [
     title: "Bulk Analyzer",
     subtitle: "Agentic AI Analytics System",
     year: "2024 – now",
-    kind: "Sole engineer · Enterprise scale",
+    kind: "Enterprise scale",
     role: "Agentic AI · Distributed systems",
     summary:
       "An AI-driven bulk document analytics platform for an enterprise contract-intelligence client, processing 1M+ contracts through agentic workflows, semantic clause compliance, and risk anomaly detection.",
@@ -351,7 +351,6 @@ export default function Home() {
               <strong className="text-[var(--ink)]">three production AI systems</strong>{" "}
               that process <strong className="text-[var(--ink)]">1M+ contracts</strong>{" "}
               and cut legal review time by <strong className="text-[var(--ink)]">60%</strong>.
-              Sole engineer, end-to-end.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Magnetic strength={14}>
@@ -425,22 +424,6 @@ export default function Home() {
                 <div className="text-[var(--muted)]">— working draft</div>
               </div>
 
-              <div className="mt-6 grid grid-cols-3 gap-3 border-t border-[var(--line)] pt-5">
-                {[
-                  ["2+", "Years"],
-                  ["3", "AI systems"],
-                  ["1M+", "Documents"],
-                ].map(([v, l]) => (
-                  <div key={l}>
-                    <div className="font-display text-[24px] leading-none text-[var(--ink)]">
-                      {v}
-                    </div>
-                    <div className="mono mt-2 text-[10px] text-[var(--muted)]">
-                      {l}
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </FadeUp>
         </div>
@@ -549,8 +532,8 @@ export default function Home() {
                   <span className="italic-serif text-[var(--ink)]">
                     contract intelligence
                   </span>{" "}
-                  systems for enterprise legal teams, as the only engineer on
-                  the project. Client meetings on Monday, shipped by Friday.
+                  systems for enterprise legal teams. Client meetings on
+                  Monday, shipped by Friday.
                 </p>
                 <p>
                   The work lives at the intersection of{" "}
