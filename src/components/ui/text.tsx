@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { textStyles, type TextStyle } from "@/lib/typography";
+import { textStyles } from "@/lib/typography";
 
 export type TextVariant =
   | "display"

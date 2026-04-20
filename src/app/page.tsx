@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowUpRight, Sparkles } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowUpRight, Check, Copy, Download } from "lucide-react";
+import { useRef, useState } from "react";
 
 import {
   Accordion,
@@ -9,1081 +10,1325 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Cursor } from "@/components/cursor";
+import { LiveClock } from "@/components/live-clock";
+import { Magnetic } from "@/components/magnetic";
+import { Marquee } from "@/components/marquee";
+import { Nav } from "@/components/nav";
+import { FadeUp, RevealWords } from "@/components/reveal";
+import { ScrollProgress } from "@/components/scroll-progress";
+
+const EMAIL = "rajatraghav07@gmail.com";
+const PHONE = "+91 99717 94844";
+const GITHUB = "https://github.com/tensorajat";
+const LINKEDIN = "https://www.linkedin.com/in/rajat7raghav/";
+const RESUME = "/Rajat-Raghav-Resume.pdf";
+
+/* ------------------------------------------------------------------ */
+/*  Data                                                               */
+/* ------------------------------------------------------------------ */
+
+type Project = {
+  n: string;
+  title: string;
+  subtitle: string;
+  year: string;
+  kind: string;
+  role: string;
+  summary: string;
+  highlights: string[];
+  metrics: [string, string][];
+  stack: string[];
+  accent: string;
+  visual: "loop" | "graph" | "stack" | "bars";
+};
+
+const projects: Project[] = [
+  {
+    n: "01",
+    title: "Bulk Analyzer",
+    subtitle: "Agentic AI Analytics System",
+    year: "2024 – now",
+    kind: "Sole engineer · Enterprise scale",
+    role: "Agentic AI · Distributed systems",
+    summary:
+      "An AI-driven bulk document analytics platform for an enterprise contract-intelligence client, processing 1M+ contracts through agentic workflows, semantic clause compliance, and risk anomaly detection.",
+    highlights: [
+      "LangGraph state machines with cyclic reasoning, fallback nodes, and contextual state hydration",
+      "Custom load balancer over RabbitMQ + Celery turning blocking ingestion into parallel ML inference",
+      "MongoDB vector traversal to resolve deeply nested Contract Family hierarchies semantically",
+      "Interactive Knowledge Graphs via React Flow + Redux surfacing cross-document entity relationships",
+    ],
+    metrics: [
+      ["1M+", "Contracts processed"],
+      ["−60%", "Legal review time"],
+      ["Days → min", "Review cycles"],
+    ],
+    stack: [
+      "LangGraph",
+      "LangChain",
+      "Agentic RAG",
+      "Qdrant",
+      "FastAPI",
+      "RabbitMQ",
+      "Celery",
+      "MongoDB",
+      "React Flow",
+      "AWS",
+    ],
+    accent: "from-[#0a5c4a] via-[#117f66] to-[#7be0c5]",
+    visual: "graph",
+  },
+  {
+    n: "02",
+    title: "Contract Review Engine",
+    subtitle: "Compliance & Risk Analysis",
+    year: "2024 – now",
+    kind: "Precision · Real-time",
+    role: "Product engineering · NLP",
+    summary:
+      "The precision counterpart to the bulk analyzer: a single-contract deep-analysis engine delivering real-time, clause-level legal intelligence via agentic AI workflows.",
+    highlights: [
+      "Async FastAPI streaming endpoints for zero-UI-blocking compliance feedback under concurrent load",
+      "Agentic RAG with Qdrant + Sentence Transformers extracting terms, schedules, and obligations from legal prose",
+      "Semantic risk scoring engine cross-referencing clauses against corporate playbooks",
+      "Multi-perspective analysis system evaluating contracts from distinct negotiating stances",
+    ],
+    metrics: [
+      ["−60%", "Legal review time"],
+      ["5×", "Faster risk flagging"],
+      ["0", "UI blocking"],
+    ],
+    stack: [
+      "FastAPI",
+      "LangChain",
+      "Qdrant",
+      "Sentence Transformers",
+      "Agentic RAG",
+      "NLP",
+      "MongoDB",
+    ],
+    accent: "from-[#c8ff4d] via-[#8fbf1b] to-[#3b5e00]",
+    visual: "loop",
+  },
+  {
+    n: "03",
+    title: "Contract & Proposal Generator",
+    subtitle: "Agentic Document Generation",
+    year: "2024 – now",
+    kind: "Agentic · Multilingual",
+    role: "Platform engineering · NLP",
+    summary:
+      "Industry-grade AI platform assembling legally-compliant contracts and proposals in under 10 seconds, across 1,000+ templates, 25+ languages, and multiple jurisdictions.",
+    highlights: [
+      "Agentic generation engine producing compliant contracts from 1,000+ templates in <10 seconds",
+      "Multilingual NLP pipelines supporting 25+ languages with jurisdiction-aligned clause insertion",
+      "MongoDB-backed template system with dynamic clause substitution and rule-based compliance",
+      "Async FastAPI background workers with Pytest-validated error recovery",
+    ],
+    metrics: [
+      ["<10s", "Generation time"],
+      ["1,000+", "Templates"],
+      ["25+", "Languages"],
+    ],
+    stack: [
+      "FastAPI",
+      "LangChain",
+      "Agentic AI",
+      "Prompt Engineering",
+      "MongoDB",
+      "React.js",
+      "Pytest",
+    ],
+    accent: "from-[#ff6b3d] via-[#ff9f4a] to-[#ffe765]",
+    visual: "stack",
+  },
+];
+
+const capabilities = [
+  {
+    n: "i",
+    title: "Agentic AI systems",
+    copy: "LangGraph state machines, cyclic reasoning loops, fallback nodes, and multi-agent orchestration built for unstructured legal and enterprise data.",
+    tags: ["LangGraph", "LangChain", "Agentic RAG"],
+  },
+  {
+    n: "ii",
+    title: "Retrieval & RAG",
+    copy: "Qdrant, FAISS, Sentence Transformers, and prompt-engineered LLM calls tuned for clause-level extraction and compliance cross-referencing.",
+    tags: ["Qdrant", "FAISS", "Semantic Search"],
+  },
+  {
+    n: "iii",
+    title: "FastAPI at scale",
+    copy: "Async streaming endpoints, real-time SSE, and tenant-aware middleware that stays calm under concurrent LLM load.",
+    tags: ["FastAPI", "Async", "Streaming"],
+  },
+  {
+    n: "iv",
+    title: "Distributed infra",
+    copy: "RabbitMQ + Celery with custom load balancing, OpenTelemetry tracing, and AWS-native CI/CD for zero-downtime deploys.",
+    tags: ["RabbitMQ", "Celery", "AWS"],
+  },
+];
+
+const experience = [
+  {
+    year: "Jan 2024 – now",
+    role: "Product Engineer",
+    org: "AI SaaS Startup",
+    location: "Remote · India",
+    copy: "Sole engineer on an enterprise engagement. Shipped three production AI systems: Bulk Analyzer, Contract Review Engine, and Contract Generator. Processing 1M+ documents and cutting legal review time by 60%.",
+    stack: ["LangGraph", "FastAPI", "Qdrant", "RabbitMQ", "AWS"],
+  },
+];
+
+const stack = [
+  "Python",
+  "TypeScript",
+  "FastAPI",
+  "Node.js",
+  "React.js",
+  "Next.js",
+  "LangChain",
+  "LangGraph",
+  "Agentic RAG",
+  "Qdrant",
+  "FAISS",
+  "MongoDB",
+  "MySQL",
+  "RabbitMQ",
+  "Celery",
+  "Docker",
+  "AWS",
+  "OpenTelemetry",
+];
+
+const principles = [
+  {
+    n: "i",
+    title: "Systems over scripts",
+    copy: "Every shipped thing is a system with a state graph, a failure mode, and a retry policy.",
+  },
+  {
+    n: "ii",
+    title: "Boring infra, sharp product",
+    copy: "Use the dullest possible infrastructure; save the cleverness for the product surface.",
+  },
+  {
+    n: "iii",
+    title: "Evals over vibes",
+    copy: "A model is not done because it looks right. It is done when the eval suite agrees.",
+  },
+  {
+    n: "iv",
+    title: "Own the whole thing",
+    copy: "Sole-engineer shipping taught me that the loop (client call → design → code → deploy → learn) must belong to one person.",
+  },
+];
+
+const faq = [
+  {
+    q: "What kind of work do you take on?",
+    a: "Agentic AI builds (LangGraph, multi-agent orchestration), contract/legal intelligence systems, and FastAPI platform work. I like hard problems that live at the intersection of LLMs, retrieval, and production infrastructure.",
+  },
+  {
+    q: "Can you operate as a sole engineer?",
+    a: "Yes, it's how I've spent the last two years. I delivered an enterprise engagement end-to-end, covering client meetings, architecture, ingestion pipelines, ML inference, front-end, and deploy.",
+  },
+  {
+    q: "How do you usually work?",
+    a: "Async-first with a weekly sync and written updates. I ship incrementally, document decisions in memos, and run evaluation suites alongside the product so latency and quality regressions are caught early.",
+  },
+  {
+    q: "Availability and timezone?",
+    a: "Based in India (IST). I overlap comfortably with APAC, EU, and US East-Coast mornings. Most client pairs work in 4–6 hour daily windows.",
+  },
+  {
+    q: "Do you do rescue missions?",
+    a: "Yes. Stalled AI launches, drifting latency, brittle retrieval. I'll scope a two-week audit and hand back a written plan with the quick wins already shipped.",
+  },
+  {
+    q: "Can I get your resume?",
+    a: "Sure, there's a download button in the hero and footer, or email rajatraghav07@gmail.com and I'll send an up-to-date copy.",
+  },
+];
+
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
 
 export default function Home() {
-  const navLinks = [
-    { label: "Work", href: "#work" },
-    { label: "Focus", href: "#focus" },
-    { label: "Development", href: "#development" },
-    { label: "Systems", href: "#systems" },
-    { label: "Papers", href: "#papers" },
-    { label: "About", href: "#about" },
-    { label: "Skills", href: "#skills" },
-    { label: "Contact", href: "#contact" },
-  ];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: containerRef });
+  const heroY = useTransform(scrollYProgress, [0, 0.2], ["0%", "-18%"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.14], [1, 0.05]);
 
-  const focusAreas = [
-    {
-      title: "Agentic AI Systems",
-      description:
-        "Graph-based agents, tool orchestration, and evaluation loops you can trust.",
-      points: ["StateGraph design", "Self-verification", "Tool governance"],
-    },
-    {
-      title: "Contract Intelligence",
-      description:
-        "Hybrid algorithms for clause extraction, deviation detection, and risk scoring.",
-      points: ["RRF ranking", "Cross-encoders", "CUAD tuning"],
-    },
-    {
-      title: "Infrastructure & Deployments",
-      description:
-        "Production-grade FastAPI systems with realtime streaming and observability.",
-      points: ["ASGI concurrency", "SSE/WebSockets", "Tenant isolation"],
-    },
-  ];
+  const [copied, setCopied] = useState(false);
+  const [activeProject, setActiveProject] = useState<number | null>(null);
 
-  const projects = [
-    {
-      title: "Agentic Contract Review",
-      year: "2024",
-      summary:
-        "Built a multi-agent compliance engine with planner/analyzer/verifier loops.",
-      impact: "Reduced review turnaround by 55% with higher precision.",
-      focus: "Agentic Systems",
-      stack: ["LangGraph", "FastAPI", "Qdrant", "RoBERTa"],
-    },
-    {
-      title: "RRF-Powered Retrieval Layer",
-      year: "2023",
-      summary:
-        "Combined dense vectors and keyword search with reciprocal rank fusion.",
-      impact: "Lifted clause recall and reduced false positives by 31%.",
-      focus: "Search + Ranking",
-      stack: ["Qdrant", "MySQL", "Cross-encoders", "Python"],
-    },
-    {
-      title: "FastAPI Operations Backbone",
-      year: "2022",
-      summary:
-        "Designed an event-driven backend with streaming updates and tenant isolation.",
-      impact: "99.95% uptime with 40% faster incident response.",
-      focus: "Infra + Reliability",
-      stack: ["FastAPI", "Redis", "S3", "Kubernetes"],
-    },
-  ];
-
-  const experience = [
-    {
-      role: "Product Engineer",
-      company: "AI + SaaS Studio",
-      period: "2022 — Present",
-      summary:
-        "Lead agentic AI delivery, contract intelligence systems, and platform reliability.",
-    },
-    {
-      role: "Software Engineer",
-      company: "Cloud Platform Company",
-      period: "2019 — 2022",
-      summary:
-        "Built multi-tenant SaaS workflows, optimized APIs, and scaled core services.",
-    },
-  ];
-
-  const skills = [
-    "TypeScript",
-    "LangGraph",
-    "FastAPI",
-    "React",
-    "Node.js",
-    "Python",
-    "PostgreSQL",
-    "Qdrant",
-    "Kubernetes",
-    "Terraform",
-    "LLM Ops",
-    "RAG Pipelines",
-    "System Design",
-    "Product Strategy",
-  ];
-
-  const metrics = [
-    { label: "Agentic systems shipped", value: "12+" },
-    { label: "Years in AI + SaaS", value: "7+" },
-    { label: "White papers authored", value: "6+" },
-  ];
-
-  const highlights = [
-    "Architected graph-based cognitive pipelines for agentic review systems.",
-    "Built hybrid semantic + keyword retrieval for legal-grade precision.",
-    "Shipped secure, observable FastAPI infra with real-time streaming.",
-    "Translated research into product decisions through white papers.",
-  ];
-
-  const approach = [
-    {
-      title: "Define",
-      description:
-        "Align on risk, success metrics, and system constraints early.",
-    },
-    {
-      title: "Engineer",
-      description:
-        "Prototype fast, validate, and ship hardened systems with tests and telemetry.",
-    },
-    {
-      title: "Operationalize",
-      description:
-        "Automate deployments, optimize performance, and guard with SLOs.",
-    },
-  ];
-
-  const developmentPillars = [
-    {
-      title: "Agentic Frameworks",
-      description:
-        "Graph-based cognitive architectures built with LangGraph and MCP for iterative reasoning.",
-      items: [
-        "StateGraph orchestration with shared AgentState",
-        "Planner / Analyzer / Verifier loops for compliance",
-        "Sandboxed code execution via Docker templates",
-        "Tooling exposed through MCP server contracts",
-      ],
-    },
-    {
-      title: "Contract Review Algorithms",
-      description:
-        "Hybrid ensemble of deterministic rules, semantic search, and ML models.",
-      items: [
-        "CUAD-tuned RoBERTa for clause extraction",
-        "RRF across Qdrant + MySQL for ranking",
-        "Cross-encoder reranking for precision",
-        "Deviation detection via cosine similarity thresholds",
-      ],
-    },
-    {
-      title: "FastAPI Infrastructure",
-      description:
-        "High-concurrency, event-driven backend with resilient middleware.",
-      items: [
-        "ASGI async I/O with Uvicorn for scale",
-        "WebSockets + SSE for real-time updates",
-        "Redis rate limiting and tenant-aware middleware",
-        "Polyglot storage: MongoDB, S3, Qdrant",
-      ],
-    },
-  ];
-
-  const signatureCapabilities = [
-    {
-      title: "Multi-agent orchestration",
-      description:
-        "Designing cooperative agent swarms with routing, memory, and self-correction.",
-      tags: ["LangGraph", "MCP", "Tooling"],
-    },
-    {
-      title: "Algorithmic rigor",
-      description:
-        "Building deterministic checks, probabilistic scoring, and retrieval systems.",
-      tags: ["RRF", "Cross-encoders", "CUAD"],
-    },
-    {
-      title: "Production-grade AI",
-      description:
-        "Infrastructure for reliability, observability, and secure deployments.",
-      tags: ["FastAPI", "K8s", "SLOs"],
-    },
-    {
-      title: "Research communication",
-      description:
-        "Authoring white papers that make complex systems legible and actionable.",
-      tags: ["Technical writing", "Evaluation", "Roadmaps"],
-    },
-  ];
-
-  const systemBlueprints = [
-    {
-      title: "Contract intelligence core",
-      description:
-        "Hybrid clause extraction, semantic retrieval, and deviation detection.",
-      signal: "RRF + RoBERTa + cosine thresholds",
-    },
-    {
-      title: "Agentic review loop",
-      description:
-        "Planner → Analyzer → Verifier pipeline for grounded compliance checks.",
-      signal: "Graph-based retries and tool gating",
-    },
-    {
-      title: "Real-time operations",
-      description:
-        "WebSocket + SSE streaming for long-running analysis and UI feedback.",
-      signal: "ASGI concurrency with tenant isolation",
-    },
-  ];
-
-  const papers = [
-    {
-      title: "Agentic Contract Intelligence",
-      year: "2024",
-      description:
-        "A graph-based cognitive architecture for high-precision contract review.",
-      topics: ["LangGraph", "MCP", "Verification"],
-    },
-    {
-      title: "RRF Retrieval for Legal Systems",
-      year: "2023",
-      description:
-        "Combining dense and keyword search with reciprocal rank fusion.",
-      topics: ["RRF", "Qdrant", "MySQL"],
-    },
-    {
-      title: "FastAPI at Scale",
-      year: "2022",
-      description:
-        "Designing multi-tenant, event-driven backends for AI workloads.",
-      topics: ["ASGI", "SSE", "Observability"],
-    },
-  ];
-
-  const deploymentStack = [
-    "Dockerized execution and sandboxing",
-    "CI/CD with environment parity",
-    "Cost-aware autoscaling and caching",
-    "Observability across traces, logs, and metrics",
-  ];
-
-  const fadeUp = {
-    hidden: { opacity: 0, y: 18 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  const stagger = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: 0.12,
-      },
-    },
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* noop */
+    }
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[var(--bg)] text-[var(--text)]">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 right-0 h-[420px] w-[420px] rounded-full bg-emerald-500/10 blur-[140px] dark:bg-emerald-500/10" />
-        <div className="absolute top-40 -left-20 h-[360px] w-[360px] rounded-full bg-blue-500/10 blur-[130px] dark:bg-blue-500/10" />
-        <div className="absolute bottom-0 right-1/3 h-[320px] w-[320px] rounded-full bg-purple-500/10 blur-[140px] dark:bg-purple-500/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.08),transparent_45%)] dark:bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.08),transparent_45%)]" />
-        <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(to_right,rgba(15,23,42,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.06)_1px,transparent_1px)] dark:opacity-30 dark:[background-image:linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" />
-      </div>
+    <div
+      id="top"
+      ref={containerRef}
+      className="relative min-h-screen bg-[var(--bg)] text-[var(--ink)]"
+    >
+      <Cursor />
+      <ScrollProgress />
+      <Nav />
 
-      <header className="sticky top-0 z-20 border-b border-zinc-200/70 bg-white/80 backdrop-blur dark:border-white/5 dark:bg-zinc-950/80">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200/70 bg-white text-xs font-semibold uppercase tracking-[0.2em] text-zinc-700 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200">
-              R
+      {/* ============================================================ */}
+      {/*  HERO                                                         */}
+      {/* ============================================================ */}
+      <motion.section
+        style={{ y: heroY, opacity: heroOpacity }}
+        className="relative mx-auto flex w-full max-w-container flex-col px-6 pb-10 pt-28 md:px-10 md:pb-14 md:pt-32"
+      >
+        {/* top meta strip */}
+        <div className="flex items-center justify-between text-[var(--muted)]">
+          <FadeUp delay={0.1}>
+            <div className="mono flex items-center gap-3">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inset-0 animate-ping rounded-full bg-[var(--accent)] opacity-70" />
+                <span className="relative h-2 w-2 rounded-full bg-[var(--accent)]" />
+              </span>
+              Available · Q2 2026
             </div>
-            <div>
-              <div className="text-sm font-semibold text-zinc-900 dark:text-white">
-                Rajat
+          </FadeUp>
+          <FadeUp delay={0.2} className="hidden sm:block">
+            <div className="mono">
+              <LiveClock timeZone="Asia/Kolkata" label="· India" />
+            </div>
+          </FadeUp>
+        </div>
+
+        {/* eyebrow */}
+        <div className="mt-12 flex items-baseline gap-4 md:mt-16">
+          <FadeUp delay={0.3}>
+            <span className="mono text-[var(--muted)]">
+              <span className="text-[var(--ink)]">(01)</span> · Portfolio / Rajat
+              Raghav
+            </span>
+          </FadeUp>
+        </div>
+
+        {/* display headline */}
+        <h1 className="display mt-6 text-[clamp(3.4rem,11vw,10.5rem)] md:mt-8">
+          <span className="block">
+            <RevealWords text="Agentic AI," />
+          </span>
+          <span className="block">
+            <RevealWords text="shipped" delay={0.15} />{" "}
+            <span className="italic-serif accent-underline">
+              <RevealWords text="solo," delay={0.26} />
+            </span>{" "}
+            <RevealWords text="at" delay={0.38} />
+          </span>
+          <span className="block">
+            <RevealWords text="enterprise" delay={0.48} />{" "}
+            <span className="italic-serif">
+              <RevealWords text="scale." delay={0.62} />
+            </span>
+          </span>
+        </h1>
+
+        <div className="mt-12 grid gap-10 border-t border-[var(--line)] pt-10 md:grid-cols-[1.15fr_0.85fr] md:gap-16">
+          <FadeUp delay={0.45}>
+            <p className="max-w-xl text-[17px] leading-[1.55] text-[var(--ink-soft)] md:text-[19px]">
+              I&rsquo;m{" "}
+              <span className="italic-serif text-[var(--ink)]">Rajat</span> — a
+              product engineer shipping{" "}
+              <strong className="text-[var(--ink)]">three production AI systems</strong>{" "}
+              that process <strong className="text-[var(--ink)]">1M+ contracts</strong>{" "}
+              and cut legal review time by <strong className="text-[var(--ink)]">60%</strong>.
+              Sole engineer, end-to-end.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <Magnetic strength={14}>
+                <a href="#work" className="btn-primary">
+                  See the work
+                  <span aria-hidden>↓</span>
+                </a>
+              </Magnetic>
+              <Magnetic strength={12}>
+                <a
+                  href={RESUME}
+                  download
+                  className="btn-ghost"
+                >
+                  <Download className="h-4 w-4" />
+                  Download résumé
+                </a>
+              </Magnetic>
+              <Magnetic strength={10}>
+                <button onClick={copyEmail} className="btn-ghost">
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4" /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" /> {EMAIL}
+                    </>
+                  )}
+                </button>
+              </Magnetic>
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={0.6}>
+            <div className="relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-5">
+              <div className="mono flex items-center justify-between text-[var(--muted)]">
+                <span>
+                  <span className="mr-2 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-[var(--accent)]" />
+                  Transmission
+                </span>
+                <span className="blink">●</span>
               </div>
-              <div className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                Product Engineer
+
+              <div className="mt-5 space-y-2 font-[ui-monospace] text-[12px] leading-[1.6] text-[var(--ink-soft)]">
+                <div className="text-[var(--muted)]">
+                  $ status --project bulk-analyzer
+                </div>
+                <div>
+                  <span className="text-[var(--accent)]">ok</span> ingest ·
+                  1,041,287 docs
+                </div>
+                <div>
+                  <span className="text-[var(--accent)]">ok</span> langgraph ·
+                  state=healthy
+                </div>
+                <div>
+                  <span className="text-[var(--accent)]">ok</span> qdrant ·
+                  p95=42ms
+                </div>
+                <div>
+                  <span className="text-[var(--accent)]">ok</span> celery ·
+                  workers=12
+                </div>
+                <div className="text-[var(--muted)]">$ now playing</div>
+                <div className="flex items-center gap-2">
+                  <span className="italic-serif text-[var(--ink)]">
+                    &ldquo;Designing agents that survive production&rdquo;
+                  </span>
+                </div>
+                <div className="text-[var(--muted)]">— working draft</div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-3 gap-3 border-t border-[var(--line)] pt-5">
+                {[
+                  ["2+", "Years"],
+                  ["3", "AI systems"],
+                  ["1M+", "Documents"],
+                ].map(([v, l]) => (
+                  <div key={l}>
+                    <div className="font-display text-[24px] leading-none text-[var(--ink)]">
+                      {v}
+                    </div>
+                    <div className="mono mt-2 text-[10px] text-[var(--muted)]">
+                      {l}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          </FadeUp>
+        </div>
+
+        <div className="mt-auto flex items-center justify-between pb-8 pt-14 text-[var(--muted)]">
+          <span className="mono">Scroll</span>
+          <span className="mono animate-pulse">↓</span>
+          <span className="mono hidden md:inline">
+            § Work · About · Papers · Contact
+          </span>
+        </div>
+      </motion.section>
+
+      {/* ============================================================ */}
+      {/*  MARQUEE BELT                                                  */}
+      {/* ============================================================ */}
+      <section className="relative border-y border-[var(--line)] bg-[var(--bg-raised)] py-6">
+        <Marquee speed={36}>
+          {[
+            "Agentic AI",
+            "Contract intelligence",
+            "LangGraph state machines",
+            "Agentic RAG",
+            "FastAPI at scale",
+            "Distributed systems",
+            "Knowledge Graphs",
+            "Sole-engineer shipping",
+          ].map((item, i) => (
+            <span
+              key={`${item}-${i}`}
+              className="mx-8 inline-flex items-center gap-8 font-display text-[40px] leading-none text-[var(--ink)] md:text-[56px]"
+            >
+              <span>{item}</span>
+              <span className="italic-serif text-[var(--accent)]">✦</span>
+            </span>
+          ))}
+        </Marquee>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  SELECTED WORK                                                 */}
+      {/* ============================================================ */}
+      <section
+        id="work"
+        className="relative mx-auto w-full max-w-container px-6 py-28 md:px-10 md:py-40"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-6 border-b border-[var(--line)] pb-8">
+          <div>
+            <div className="mono text-[var(--muted)]">
+              <span className="text-[var(--ink)]">(02)</span> · Selected work
+            </div>
+            <h2 className="editorial mt-3 text-[clamp(2.4rem,5vw,4.2rem)]">
+              Three systems,{" "}
+              <span className="italic-serif">one operator.</span>
+            </h2>
           </div>
-          <nav className="hidden items-center gap-6 text-sm text-zinc-500 md:flex dark:text-zinc-300">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="transition hover:text-zinc-900 dark:hover:text-white"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-3">
-            <a
-              href="/resume.pdf"
-              className="hidden rounded-full border border-zinc-200/70 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-zinc-300 sm:inline-flex dark:border-white/10 dark:text-zinc-100 dark:hover:border-white/30"
-            >
-              Download resume
-            </a>
-            <ThemeToggle />
-            <a
-              href="mailto:hello@yourdomain.com"
-              className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200"
-            >
-              Let&apos;s talk
-            </a>
+          <div className="mono max-w-sm text-right text-[var(--muted)]">
+            Jan 2024 → now · Built and owned end-to-end.
           </div>
         </div>
-      </header>
 
-      <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 pb-24 pt-16">
-        <motion.section
-          className="relative overflow-hidden rounded-[2.5rem] border border-zinc-200/50 bg-gradient-to-br from-white via-zinc-50/50 to-white p-12 shadow-2xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950 dark:via-zinc-900/50 dark:to-zinc-950 dark:shadow-zinc-950/50 lg:p-16"
-          variants={stagger}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.25 }}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.15),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.15),transparent_50%)]" />
-          
-          <div className="relative grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-            <motion.div className="space-y-8" variants={fadeUp}>
-              <motion.div
-                className="inline-flex items-center gap-3 rounded-full border border-emerald-400/50 bg-gradient-to-r from-emerald-50 to-emerald-100/50 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 shadow-lg shadow-emerald-500/10 dark:border-emerald-400/40 dark:from-emerald-950/30 dark:to-emerald-900/20 dark:text-emerald-200"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                <Sparkles className="h-4 w-4 animate-pulse text-emerald-600 dark:text-emerald-300" />
-                AI Product Engineer
-              </motion.div>
-              
-              <div className="space-y-6">
-                <motion.h1
-                  className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 bg-clip-text text-5xl font-bold leading-[1.1] text-transparent dark:from-white dark:via-zinc-100 dark:to-white sm:text-7xl"
-                  variants={fadeUp}
-                >
-                  I design{" "}
-                  <span className="relative inline-block">
-                    <span className="relative z-10 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-emerald-400 dark:to-teal-400">
-                      agentic AI systems
-                    </span>
-                    <motion.span
-                      className="absolute inset-0 -z-10 bg-gradient-to-r from-emerald-200/50 to-teal-200/50 blur-2xl dark:from-emerald-500/20 dark:to-teal-500/20"
-                      animate={{
-                        opacity: [0.5, 1, 0.5],
-                        scale: [1, 1.05, 1],
-                      }}
-                      transition={{
-                        duration: 3,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                      }}
-                    />
-                  </span>{" "}
-                  and the infrastructure that keeps them reliable.
-                </motion.h1>
-                
-                <motion.p
-                  className="text-xl leading-relaxed text-zinc-600 dark:text-zinc-300"
-                  variants={fadeUp}
-                >
-                  Multi-agent orchestration, complex contract algorithms, secure
-                  deployments, and the white papers that make the stack
-                  understandable for teams and stakeholders.
-                </motion.p>
-              </div>
-              
-              <motion.div
-                className="flex flex-wrap gap-4"
-                variants={fadeUp}
-              >
-                <motion.a
-                  href="#systems"
-                  className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-zinc-900 to-zinc-800 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-zinc-900/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-zinc-900/30 dark:from-white dark:to-zinc-100 dark:text-zinc-900 dark:shadow-white/10 dark:hover:shadow-white/20"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Explore systems
-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
-                </motion.a>
-                <motion.a
-                  href="#papers"
-                  className="rounded-full border-2 border-zinc-300 bg-white/80 px-6 py-3 text-sm font-semibold text-zinc-700 backdrop-blur-sm transition-all hover:border-zinc-400 hover:bg-white hover:shadow-lg dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/10"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Read papers
-                </motion.a>
-                <motion.a
-                  href="https://www.linkedin.com/in/your-handle"
-                  className="rounded-full border-2 border-zinc-300 bg-white/80 px-6 py-3 text-sm font-semibold text-zinc-700 backdrop-blur-sm transition-all hover:border-zinc-400 hover:bg-white hover:shadow-lg dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/10"
-                  target="_blank"
-                  rel="noreferrer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  LinkedIn
-                </motion.a>
-              </motion.div>
-              
-              <motion.div
-                className="flex flex-wrap items-center gap-6 text-sm font-medium text-zinc-500 dark:text-zinc-400"
-                variants={fadeUp}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  AI systems • SaaS • Infrastructure
-                </span>
-                <span className="hidden h-1 w-1 rounded-full bg-zinc-400 sm:inline-flex" />
-                <span>Remote · Global · UTC+5:30</span>
-              </motion.div>
-            </motion.div>
+        <div className="mt-10 divide-y divide-[var(--line)]">
+          {projects.map((project, idx) => (
+            <ProjectRow
+              key={project.title}
+              project={project}
+              index={idx}
+              active={activeProject === idx}
+              onEnter={() => setActiveProject(idx)}
+              onLeave={() => setActiveProject(null)}
+            />
+          ))}
+        </div>
 
-            <motion.div className="space-y-6" variants={fadeUp}>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {signatureCapabilities.map((capability, idx) => (
-                  <motion.div
-                    key={capability.title}
-                    className="group relative overflow-hidden rounded-2xl border border-zinc-200/60 bg-white/90 p-6 shadow-lg shadow-zinc-900/5 backdrop-blur-sm transition-all hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-900/10 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    whileHover={{ y: -4 }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 transition-opacity group-hover:opacity-100 dark:from-emerald-950/20" />
-                    <div className="relative">
-                      <h3 className="text-base font-bold text-zinc-900 dark:text-white">
-                        {capability.title}
-                      </h3>
-                      <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                        {capability.description}
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                        {capability.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 font-medium text-zinc-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              
-              <div className="grid gap-4 sm:grid-cols-3">
-                {metrics.map((metric, idx) => (
-                  <motion.div
-                    key={metric.label}
-                    className="relative overflow-hidden rounded-2xl border border-zinc-200/60 bg-gradient-to-br from-white to-zinc-50/50 p-6 shadow-lg shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950/70 dark:to-zinc-900/50"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    whileHover={{ scale: 1.05, y: -4 }}
-                  >
-                    <div className="text-3xl font-bold text-zinc-900 dark:text-white">
-                      {metric.value}
-                    </div>
-                    <div className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-                      {metric.label}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </motion.section>
-
-        <motion.section
-          id="work"
-          className="space-y-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <motion.div
-            className="flex flex-wrap items-end justify-between gap-6"
-            variants={fadeUp}
+        <FadeUp delay={0.1} className="mt-10 flex justify-end">
+          <a
+            href={RESUME}
+            download
+            className="mono link-underline text-[var(--muted)] hover:text-[var(--ink)]"
           >
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                Selected Work
-              </div>
-              <h2 className="mt-4 bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-                Case studies that prove rigor at scale
-              </h2>
-            </div>
-            <span className="rounded-full border border-zinc-200/60 bg-white/80 px-4 py-2 text-sm font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-              2022 — 2024
-            </span>
-          </motion.div>
-          
-          <div className="grid gap-8 lg:grid-cols-3">
-            {projects.map((project, idx) => (
-              <motion.article
-                key={project.title}
-                className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-8 shadow-xl shadow-zinc-900/5 transition-all hover:border-zinc-300 hover:shadow-2xl hover:shadow-zinc-900/10 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50 dark:hover:border-white/20 dark:hover:bg-white/5"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 via-emerald-50/0 to-emerald-50/0 transition-all group-hover:from-emerald-50/50 group-hover:via-emerald-50/30 group-hover:to-emerald-50/50 dark:group-hover:from-emerald-950/30 dark:group-hover:via-emerald-950/20 dark:group-hover:to-emerald-950/30" />
-                
-                <div className="relative z-10 flex h-full flex-col justify-between">
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full border border-emerald-200/60 bg-emerald-50/80 px-3 py-1 text-xs font-bold uppercase tracking-[0.3em] text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-950/40 dark:text-emerald-200">
-                        {project.focus}
-                      </span>
-                      <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">
-                        {project.year}
-                      </span>
-                    </div>
-                    
-                    <h3 className="text-2xl font-bold leading-tight text-zinc-900 dark:text-white">
-                      {project.title}
-                    </h3>
-                    
-                    <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                      {project.summary}
-                    </p>
-                    
-                    <div className="rounded-lg border border-emerald-200/60 bg-gradient-to-r from-emerald-50 to-teal-50/50 p-3 dark:border-emerald-400/20 dark:from-emerald-950/40 dark:to-teal-950/40">
-                      <p className="text-sm font-bold text-emerald-700 dark:text-emerald-200">
-                        {project.impact}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="mt-8 flex flex-wrap gap-2">
-                    {project.stack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="rounded-full border border-zinc-200/60 bg-white/80 px-3 py-1.5 text-xs font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.article>
-            ))}
-          </div>
-        </motion.section>
+            Download full résumé →
+          </a>
+        </FadeUp>
+      </section>
 
-        <motion.section
-          id="focus"
-          className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr]"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <motion.div className="space-y-6" variants={fadeUp}>
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-              Focus
+      {/* ============================================================ */}
+      {/*  ABOUT                                                         */}
+      {/* ============================================================ */}
+      <section
+        id="about"
+        className="relative border-t border-[var(--line)] bg-[var(--bg-raised)] py-28 md:py-40"
+      >
+        <div className="mx-auto grid w-full max-w-container gap-16 px-6 md:grid-cols-[0.9fr_1.1fr] md:px-10">
+          <div>
+            <div className="mono text-[var(--muted)]">
+              <span className="text-[var(--ink)]">(03)</span> · About
             </div>
-            <h2 className="bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-              Agentic systems across product and infrastructure
+            <h2 className="editorial mt-3 text-[clamp(2.4rem,5vw,4rem)]">
+              A product engineer who ships{" "}
+              <span className="italic-serif">the whole loop.</span>
             </h2>
-            <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-              I bridge product strategy and technical execution to deliver
-              outcomes across AI workflows, contract intelligence, and resilient
-              infrastructure.
-            </p>
-            <motion.div
-              className="space-y-4 rounded-2xl border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/50 to-white p-8 shadow-xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50"
-              variants={fadeUp}
-            >
-              <h3 className="text-sm font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-300">
-                Highlights
-              </h3>
-              <ul className="space-y-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                {highlights.map((item, idx) => (
-                  <motion.li
-                    key={item}
-                    className="flex gap-4"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                  >
-                    <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br from-emerald-400 to-teal-400 shadow-lg shadow-emerald-500/30" />
-                    <span>{item}</span>
-                  </motion.li>
+            <FadeUp delay={0.1}>
+              <div className="mt-10 space-y-5 text-[17px] leading-[1.7] text-[var(--ink-soft)]">
+                <p>
+                  I spent the last two years building{" "}
+                  <span className="italic-serif text-[var(--ink)]">
+                    contract intelligence
+                  </span>{" "}
+                  systems for enterprise legal teams — as the only engineer on
+                  the project. Client meetings on Monday, shipped by Friday.
+                </p>
+                <p>
+                  The work lives at the intersection of{" "}
+                  <span className="italic-serif text-[var(--ink)]">
+                    language models
+                  </span>
+                  ,{" "}
+                  <span className="italic-serif text-[var(--ink)]">
+                    information retrieval
+                  </span>
+                  , and{" "}
+                  <span className="italic-serif text-[var(--ink)]">
+                    distributed systems
+                  </span>
+                  . LangGraph state machines, Agentic RAG over Qdrant,
+                  RabbitMQ + Celery under FastAPI — all running on AWS behind
+                  OpenTelemetry traces.
+                </p>
+                <p>
+                  Shipping production AI alone means every design decision has
+                  your name on it. That&rsquo;s the job I signed up for.
+                </p>
+              </div>
+            </FadeUp>
+          </div>
+
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {capabilities.slice(0, 3).map((p, i) => (
+                <FadeUp key={p.title} delay={i * 0.08}>
+                  <div className="h-full rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
+                    <div className="mono text-[var(--muted)]">0{i + 1}</div>
+                    <h3 className="editorial mt-2 text-[22px]">{p.title}</h3>
+                    <p className="mt-3 text-[14px] leading-[1.6] text-[var(--ink-soft)]">
+                      {p.copy}
+                    </p>
+                  </div>
+                </FadeUp>
+              ))}
+              <FadeUp delay={0.24}>
+                <a
+                  href="#contact"
+                  className="group flex h-full flex-col justify-between rounded-2xl border border-[var(--ink)] bg-[var(--ink)] p-6 text-[var(--bg)] transition-colors"
+                >
+                  <div className="mono opacity-70">04 · Always</div>
+                  <div>
+                    <h3 className="editorial mt-10 text-[22px]">
+                      Work with me
+                    </h3>
+                    <div className="mt-3 inline-flex items-center gap-1.5 text-[14px] opacity-90 transition-transform group-hover:translate-x-1">
+                      Start a conversation
+                      <ArrowUpRight className="h-4 w-4" />
+                    </div>
+                  </div>
+                </a>
+              </FadeUp>
+            </div>
+
+            <div className="space-y-5">
+              <div className="mono text-[var(--muted)]">Capabilities</div>
+              <ul className="divide-y divide-[var(--line)]">
+                {capabilities.map((c, i) => (
+                  <FadeUp key={c.title} delay={i * 0.06}>
+                    <li className="grid grid-cols-[40px_1fr] items-baseline gap-6 py-4 md:grid-cols-[40px_1.2fr_1.4fr_auto]">
+                      <span className="italic-serif text-[var(--muted)]">
+                        {c.n}.
+                      </span>
+                      <span className="editorial text-[22px]">{c.title}</span>
+                      <span className="text-[14px] leading-[1.55] text-[var(--ink-soft)] md:col-start-3">
+                        {c.copy}
+                      </span>
+                      <span className="mono hidden text-[var(--muted)] md:inline">
+                        {c.tags.join(" · ")}
+                      </span>
+                    </li>
+                  </FadeUp>
                 ))}
               </ul>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            {focusAreas.map((area, idx) => (
-              <motion.div
-                key={area.title}
-                className="group relative overflow-hidden rounded-2xl border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-6 shadow-lg shadow-zinc-900/5 transition-all hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-900/10 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50 dark:hover:border-white/20"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                whileHover={{ y: -6, scale: 1.02 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 to-teal-50/0 transition-all group-hover:from-emerald-50/50 group-hover:to-teal-50/30 dark:group-hover:from-emerald-950/30 dark:group-hover:to-teal-950/20" />
-                <div className="relative z-10">
-                  <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                    {area.title}
+      {/* ============================================================ */}
+      {/*  PRINCIPLES                                                    */}
+      {/* ============================================================ */}
+      <section
+        id="principles"
+        className="relative mx-auto w-full max-w-container px-6 py-28 md:px-10 md:py-40"
+      >
+        <div className="border-b border-[var(--line)] pb-8">
+          <div className="mono text-[var(--muted)]">
+            <span className="text-[var(--ink)]">(04)</span> · Principles
+          </div>
+          <h2 className="editorial mt-3 max-w-4xl text-[clamp(2.4rem,5vw,4.2rem)]">
+            Four rules I don&rsquo;t{" "}
+            <span className="italic-serif">negotiate.</span>
+          </h2>
+        </div>
+
+        <div className="mt-14 grid gap-0 md:grid-cols-2">
+          {principles.map((p, i) => (
+            <FadeUp
+              key={p.title}
+              delay={i * 0.08}
+              className={`relative border-[var(--line)] px-0 py-10 md:px-10 md:py-14 ${
+                i % 2 === 0 ? "md:border-r" : ""
+              } ${i < 2 ? "border-b md:border-b" : ""} ${
+                i >= 2 ? "border-b md:border-b-0" : ""
+              }`}
+            >
+              <div className="flex items-start gap-6">
+                <span className="font-display text-[64px] leading-none text-[var(--muted)] md:text-[88px]">
+                  {p.n}.
+                </span>
+                <div className="pt-3">
+                  <h3 className="editorial text-[26px] md:text-[32px]">
+                    {p.title}
                   </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                    {area.description}
+                  <p className="mt-3 max-w-md text-[15px] leading-[1.6] text-[var(--ink-soft)]">
+                    {p.copy}
                   </p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {area.points.map((point) => (
-                      <span
-                        key={point}
-                        className="rounded-full border border-zinc-200/60 bg-white/80 px-3 py-1 text-xs font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300"
-                      >
-                        {point}
+                </div>
+              </div>
+            </FadeUp>
+          ))}
+        </div>
+
+        <FadeUp delay={0.1} className="mt-20">
+          <blockquote className="mx-auto max-w-4xl text-center">
+            <div className="font-display text-[clamp(1.8rem,3.6vw,3rem)] leading-[1.2] text-[var(--ink)]">
+              <span className="italic-serif text-[var(--muted)]">&ldquo;</span>
+              The best software feels inevitable — like the problem could only
+              have been solved this way. Everything else is{" "}
+              <span className="italic-serif">scaffolding.</span>
+              <span className="italic-serif text-[var(--muted)]">&rdquo;</span>
+            </div>
+            <div className="mono mt-6 text-[var(--muted)]">
+              — personal memo, 2024
+            </div>
+          </blockquote>
+        </FadeUp>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  EXPERIENCE + EDUCATION                                        */}
+      {/* ============================================================ */}
+      <section
+        id="experience"
+        className="relative border-t border-[var(--line)] bg-[var(--bg-raised)] py-28 md:py-40"
+      >
+        <div className="mx-auto w-full max-w-container px-6 md:px-10">
+          <div className="border-b border-[var(--line)] pb-8">
+            <div className="mono text-[var(--muted)]">
+              <span className="text-[var(--ink)]">(05)</span> · Experience
+            </div>
+            <h2 className="editorial mt-3 text-[clamp(2.4rem,5vw,4rem)]">
+              Two years, one company,{" "}
+              <span className="italic-serif">three shipped systems.</span>
+            </h2>
+          </div>
+
+          <div className="mt-10 divide-y divide-[var(--line)]">
+            {experience.map((e, i) => (
+              <FadeUp key={e.role} delay={i * 0.08}>
+                <div className="group grid grid-cols-1 items-baseline gap-4 py-8 md:grid-cols-[200px_1fr_1fr_auto] md:gap-10">
+                  <div className="mono text-[var(--muted)]">{e.year}</div>
+                  <div>
+                    <div className="editorial text-[28px] leading-tight">
+                      {e.role}
+                    </div>
+                    <div className="mt-1 text-[14px] text-[var(--muted)]">
+                      {e.org} · {e.location}
+                    </div>
+                  </div>
+                  <p className="text-[15px] leading-[1.6] text-[var(--ink-soft)]">
+                    {e.copy}
+                  </p>
+                  <div className="flex flex-wrap gap-2 md:justify-end">
+                    {e.stack.map((s) => (
+                      <span key={s} className="chip">
+                        {s}
                       </span>
                     ))}
                   </div>
                 </div>
-              </motion.div>
+              </FadeUp>
             ))}
           </div>
-        </motion.section>
 
-        <motion.section
-          id="development"
-          className="relative overflow-hidden rounded-[2.5rem] border border-zinc-200/50 bg-gradient-to-br from-white via-zinc-50/30 to-white p-12 shadow-2xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950 dark:via-zinc-900/50 dark:to-zinc-950 dark:shadow-zinc-950/50 lg:p-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(16,185,129,0.08),transparent_50%)] dark:bg-[radial-gradient(circle_at_20%_50%,rgba(16,185,129,0.12),transparent_50%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(59,130,246,0.08),transparent_50%)] dark:bg-[radial-gradient(circle_at_80%_50%,rgba(59,130,246,0.12),transparent_50%)]" />
-          
-          <div className="relative space-y-12">
-            <motion.div
-              className="flex flex-wrap items-end justify-between gap-6"
-              variants={fadeUp}
-            >
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                  Development
-                </div>
-                <h2 className="mt-4 bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-                  What I build under the hood
-                </h2>
-              </div>
-              <span className="rounded-full border border-zinc-200/60 bg-white/80 px-4 py-2 text-sm font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-                Agentic systems • Contract AI • FastAPI
-              </span>
-            </motion.div>
-            
-            <div className="grid gap-8 lg:grid-cols-3">
-              {developmentPillars.map((pillar, idx) => (
-                <motion.div
-                  key={pillar.title}
-                  className="group relative overflow-hidden rounded-2xl border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-7 shadow-xl shadow-zinc-900/5 transition-all hover:border-zinc-300 hover:shadow-2xl hover:shadow-zinc-900/10 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50 dark:hover:border-white/20"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.15 }}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/0 via-teal-50/0 to-blue-50/0 transition-all group-hover:from-emerald-50/40 group-hover:via-teal-50/30 group-hover:to-blue-50/40 dark:group-hover:from-emerald-950/30 dark:group-hover:via-teal-950/20 dark:group-hover:to-blue-950/30" />
-                  <div className="relative z-10">
-                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                      {pillar.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                      {pillar.description}
-                    </p>
-                    <ul className="mt-6 space-y-3 text-sm text-zinc-600 dark:text-zinc-300">
-                      {pillar.items.map((item, itemIdx) => (
-                        <motion.li
-                          key={item}
-                          className="flex gap-3"
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: idx * 0.15 + itemIdx * 0.05 }}
-                        >
-                          <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-gradient-to-br from-emerald-400 to-teal-400 shadow-md shadow-emerald-500/30" />
-                          <span className="leading-relaxed">{item}</span>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.section>
+        </div>
+      </section>
 
-        <motion.section
-          id="systems"
-          className="space-y-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <motion.div
-            className="flex flex-wrap items-end justify-between gap-6"
-            variants={fadeUp}
-          >
+      {/* ============================================================ */}
+      {/*  STACK                                                         */}
+      {/* ============================================================ */}
+      <section
+        id="stack"
+        className="relative border-y border-[var(--line)]"
+      >
+        <div className="mx-auto w-full max-w-container px-6 pb-10 pt-20 md:px-10 md:pb-14 md:pt-28">
+          <div className="flex flex-wrap items-end justify-between gap-6 border-b border-[var(--line)] pb-8">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                Systems
+              <div className="mono text-[var(--muted)]">
+                <span className="text-[var(--ink)]">(06)</span> · Stack
               </div>
-              <h2 className="mt-4 bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-                Architected for rigor, auditability, and scale
+              <h2 className="editorial mt-3 text-[clamp(2.4rem,5vw,4rem)]">
+                Tools I <span className="italic-serif">trust</span> to run hot.
               </h2>
             </div>
-            <span className="rounded-full border border-zinc-200/60 bg-white/80 px-4 py-2 text-sm font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-              AI-native • Contract intelligence • Production-ready
+            <p className="max-w-sm text-[15px] text-[var(--ink-soft)]">
+              Deliberately small. Learned deeply. Chosen because they survive
+              incident review at 3 a.m.
+            </p>
+          </div>
+        </div>
+
+        <Marquee speed={44}>
+          {stack.map((s, i) => (
+            <span
+              key={`${s}-${i}`}
+              className="mx-6 inline-flex items-center gap-6 font-display text-[34px] leading-none text-[var(--muted-strong)] md:text-[44px]"
+            >
+              <span>{s}</span>
+              <span className="text-[var(--line)]">/</span>
             </span>
-          </motion.div>
-          
-          <Accordion
-            type="single"
-            collapsible
-            className="grid gap-6 lg:grid-cols-3"
-          >
-            {systemBlueprints.map((system, idx) => (
-              <motion.div
-                key={system.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-              >
-                <AccordionItem value={system.title}>
-                  <AccordionTrigger className="text-lg font-bold">
-                    {system.title}
+          ))}
+        </Marquee>
+        <Marquee speed={52} reverse>
+          {[
+            "Docker",
+            "Jenkins",
+            "NGINX",
+            "AWS EC2",
+            "S3",
+            "CloudFront",
+            "Elasticsearch",
+            "IAM",
+            "Cloudflare",
+            "Pytest",
+          ].map((s, i) => (
+            <span
+              key={`${s}-${i}`}
+              className="mx-6 inline-flex items-center gap-6 font-display text-[28px] leading-none text-[var(--muted)] md:text-[36px]"
+            >
+              <span className="italic-serif">{s}</span>
+              <span className="text-[var(--line)]">·</span>
+            </span>
+          ))}
+        </Marquee>
+
+        <div className="mx-auto w-full max-w-container px-6 pb-20 pt-10 md:px-10 md:pb-28">
+          <div className="grid gap-8 md:grid-cols-4">
+            {[
+              {
+                h: "AI & LLM",
+                items: [
+                  "LangChain",
+                  "LangGraph",
+                  "Agentic RAG",
+                  "Qdrant / FAISS",
+                  "Sentence Transformers",
+                ],
+              },
+              {
+                h: "Backend",
+                items: [
+                  "Python",
+                  "FastAPI",
+                  "Node.js",
+                  "Async Processing",
+                  "Pytest",
+                ],
+              },
+              {
+                h: "Distributed",
+                items: [
+                  "RabbitMQ",
+                  "Celery",
+                  "Load Balancing",
+                  "OpenTelemetry",
+                  "Microservices",
+                ],
+              },
+              {
+                h: "Cloud & Infra",
+                items: [
+                  "AWS EC2 / S3",
+                  "Amplify · CloudFront",
+                  "Docker · Jenkins",
+                  "NGINX · CI/CD",
+                  "IAM · Cloudflare",
+                ],
+              },
+            ].map((col, i) => (
+              <FadeUp key={col.h} delay={i * 0.08}>
+                <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-6">
+                  <div className="mono text-[var(--muted)]">{col.h}</div>
+                  <ul className="mt-4 space-y-2 text-[15px] text-[var(--ink-soft)]">
+                    {col.items.map((x) => (
+                      <li key={x} className="flex items-center gap-2">
+                        <span className="h-1 w-1 rounded-full bg-[var(--accent)]" />
+                        {x}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </FadeUp>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================================ */}
+      {/*  FAQ                                                           */}
+      {/* ============================================================ */}
+      <section
+        id="faq"
+        className="relative mx-auto w-full max-w-container px-6 py-28 md:px-10 md:py-40"
+      >
+        <div className="grid gap-14 md:grid-cols-[0.9fr_1.1fr] md:gap-20">
+          <div>
+            <div className="mono text-[var(--muted)]">
+              <span className="text-[var(--ink)]">(07)</span> · Questions
+            </div>
+            <h2 className="editorial mt-3 text-[clamp(2.4rem,5vw,4rem)]">
+              Anything else you&rsquo;d{" "}
+              <span className="italic-serif">like to ask?</span>
+            </h2>
+            <p className="mt-8 max-w-sm text-[15px] leading-[1.6] text-[var(--ink-soft)]">
+              A few things I&rsquo;m asked often. If your question isn&rsquo;t
+              here, write to me — I answer every legitimate inbound within 48
+              hours.
+            </p>
+            <div className="mt-8">
+              <Magnetic>
+                <a
+                  href={`mailto:${EMAIL}?subject=A%20question%20for%20you`}
+                  className="btn-ghost"
+                >
+                  Ask directly →
+                </a>
+              </Magnetic>
+            </div>
+          </div>
+          <div>
+            <Accordion type="single" collapsible className="space-y-3">
+              {faq.map((item, i) => (
+                <AccordionItem key={item.q} value={`q-${i}`}>
+                  <AccordionTrigger>
+                    <span className="flex items-baseline gap-4">
+                      <span className="mono text-[var(--muted)]">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="editorial text-[20px] md:text-[22px]">
+                        {item.q}
+                      </span>
+                    </span>
                   </AccordionTrigger>
-                  <AccordionContent className="mt-4 space-y-4">
-                    <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                      {system.description}
+                  <AccordionContent className="ml-10 mt-3">
+                    <p className="max-w-xl text-[15px] leading-[1.6]">
+                      {item.a}
                     </p>
-                    <div className="rounded-lg border border-emerald-200/60 bg-gradient-to-r from-emerald-50 to-teal-50/50 p-3 text-xs font-bold uppercase tracking-[0.3em] text-emerald-700 dark:border-emerald-400/20 dark:from-emerald-950/40 dark:to-teal-950/40 dark:text-emerald-200">
-                      {system.signal}
-                    </div>
                   </AccordionContent>
                 </AccordionItem>
-              </motion.div>
-            ))}
-          </Accordion>
-          
-          <motion.div
-            className="rounded-[2rem] border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-10 shadow-xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="text-xs font-bold uppercase tracking-[0.4em] text-emerald-600 dark:text-emerald-300">
-              Deployment & Reliability
-            </div>
-            <div className="mt-6 grid gap-5 sm:grid-cols-2">
-              {deploymentStack.map((item, idx) => (
-                <motion.div
-                  key={item}
-                  className="flex items-start gap-4 text-sm"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.3 + idx * 0.1 }}
-                >
-                  <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br from-emerald-400 to-teal-400 shadow-lg shadow-emerald-500/30" />
-                  <span className="leading-relaxed text-zinc-600 dark:text-zinc-300">
-                    {item}
-                  </span>
-                </motion.div>
               ))}
-            </div>
-          </motion.div>
-        </motion.section>
-
-        <motion.section
-          id="papers"
-          className="space-y-12"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <motion.div
-            className="flex flex-wrap items-end justify-between gap-6"
-            variants={fadeUp}
-          >
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                White Papers
-              </div>
-              <h2 className="mt-4 bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-                Research that translates into product decisions
-              </h2>
-            </div>
-            <span className="rounded-full border border-zinc-200/60 bg-white/80 px-4 py-2 text-sm font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-              Systems thinking • Evidence-backed
-            </span>
-          </motion.div>
-          
-          <div className="grid gap-8 lg:grid-cols-3">
-            {papers.map((paper, idx) => (
-              <motion.div
-                key={paper.title}
-                className="group relative overflow-hidden rounded-[2rem] border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-8 shadow-xl shadow-zinc-900/5 transition-all hover:border-zinc-300 hover:shadow-2xl hover:shadow-zinc-900/10 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50 dark:hover:border-white/20"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.15 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-purple-50/0 to-pink-50/0 transition-all group-hover:from-blue-50/40 group-hover:via-purple-50/30 group-hover:to-pink-50/40 dark:group-hover:from-blue-950/30 dark:group-hover:via-purple-950/20 dark:group-hover:to-pink-950/30" />
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full border border-blue-200/60 bg-blue-50/80 px-3 py-1 text-xs font-bold uppercase tracking-[0.3em] text-blue-700 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-200">
-                      Paper
-                    </span>
-                    <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500">
-                      {paper.year}
-                    </span>
-                  </div>
-                  <h3 className="mt-5 text-xl font-bold leading-tight text-zinc-900 dark:text-white">
-                    {paper.title}
-                  </h3>
-                  <p className="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                    {paper.description}
-                  </p>
-                  <div className="mt-6 flex flex-wrap gap-2">
-                    {paper.topics.map((topic) => (
-                      <span
-                        key={topic}
-                        className="rounded-full border border-zinc-200/60 bg-white/80 px-3 py-1.5 text-xs font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300"
-                      >
-                        {topic}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+            </Accordion>
           </div>
-        </motion.section>
+        </div>
+      </section>
 
-        <motion.section
-          id="about"
-          className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <motion.div
-            className="rounded-[2rem] border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-10 shadow-xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50"
-            variants={fadeUp}
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-              Experience
-            </div>
-            <h2 className="mt-4 bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-              Product-minded engineering leader
-            </h2>
-            <p className="mt-5 text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-              I lead delivery across AI features, platform architecture, and
-              infrastructure scale. Comfortable guiding strategy, execution, and
-              cross-functional alignment.
-            </p>
-            <div className="mt-10 space-y-8">
-              {experience.map((role, idx) => (
-                <motion.div
-                  key={role.role}
-                  className="relative border-l-2 border-emerald-300/60 pl-8 dark:border-emerald-400/40"
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.2 }}
-                >
-                  <div className="absolute -left-2 top-0 h-4 w-4 rounded-full border-2 border-emerald-300 bg-white dark:border-emerald-400 dark:bg-zinc-950" />
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-bold text-zinc-900 dark:text-white">
-                      {role.role}
-                    </span>
-                    <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                      {role.period}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-sm font-semibold text-zinc-600 dark:text-zinc-300">
-                    {role.company}
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                    {role.summary}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+      {/* ============================================================ */}
+      {/*  CONTACT                                                       */}
+      {/* ============================================================ */}
+      <section
+        id="contact"
+        className="relative border-t border-[var(--line)] bg-[var(--bg-raised)]"
+      >
+        <div className="mx-auto w-full max-w-container px-6 py-32 md:px-10 md:py-48">
+          <div className="mono text-[var(--muted)]">
+            <span className="text-[var(--ink)]">(08)</span> · Contact
+          </div>
 
-          <div className="space-y-6">
-            <motion.div
-              className="rounded-[2rem] border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-8 shadow-xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                Approach
-              </div>
-              <div className="mt-6 space-y-6">
-                {approach.map((item, idx) => (
-                  <motion.div
-                    key={item.title}
-                    className="space-y-2"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
+          <h2 className="display mt-8 text-[clamp(3rem,12vw,11rem)] leading-[0.9]">
+            <span className="block">
+              <RevealWords text="Got something" />
+            </span>
+            <span className="block">
+              <RevealWords text="worth" delay={0.15} />{" "}
+              <span className="italic-serif accent-underline">
+                <RevealWords text="building?" delay={0.26} />
+              </span>
+            </span>
+          </h2>
+
+          <div className="mt-14 grid gap-10 border-t border-[var(--line)] pt-10 md:grid-cols-[1.1fr_0.9fr]">
+            <FadeUp>
+              <p className="max-w-xl text-[18px] leading-[1.6] text-[var(--ink-soft)]">
+                Agentic AI delivery, contract intelligence, or platform rescue.
+                If the problem is hard and the team is honest, write to me.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Magnetic>
+                  <a
+                    href={`mailto:${EMAIL}?subject=Hello%20Rajat`}
+                    className="btn-primary"
                   >
-                    <div className="text-base font-bold text-zinc-900 dark:text-white">
-                      {item.title}
-                    </div>
-                    <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400">
-                      {item.description}
-                    </p>
-                  </motion.div>
+                    {EMAIL}
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                </Magnetic>
+                <Magnetic>
+                  <a href={RESUME} download className="btn-ghost">
+                    <Download className="h-4 w-4" />
+                    Résumé (PDF)
+                  </a>
+                </Magnetic>
+                <Magnetic>
+                  <a href="#top" className="btn-ghost">
+                    Back to top ↑
+                  </a>
+                </Magnetic>
+              </div>
+              <div className="mt-8 mono text-[var(--muted)]">
+                Or call: <span className="text-[var(--ink)]">{PHONE}</span>
+              </div>
+            </FadeUp>
+
+            <FadeUp delay={0.12}>
+              <ul className="divide-y divide-[var(--line)] rounded-2xl border border-[var(--line)] bg-[var(--surface)]">
+                {[
+                  ["GitHub", "github.com/tensorajat", GITHUB],
+                  ["LinkedIn", "linkedin.com/in/rajat7raghav", LINKEDIN],
+                  ["Email", EMAIL, `mailto:${EMAIL}`],
+                  ["Résumé", "PDF · 3 pages", RESUME],
+                ].map(([label, handle, href]) => (
+                  <li key={label}>
+                    <a
+                      href={href}
+                      target={href.startsWith("http") ? "_blank" : undefined}
+                      rel={href.startsWith("http") ? "noreferrer" : undefined}
+                      download={label === "Résumé" ? true : undefined}
+                      className="group flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-[var(--bg-raised)]"
+                    >
+                      <span className="flex items-center gap-4">
+                        <span className="mono text-[var(--muted)]">
+                          {label}
+                        </span>
+                        <span className="text-[14px] text-[var(--ink-soft)]">
+                          {handle}
+                        </span>
+                      </span>
+                      <ArrowUpRight className="h-4 w-4 text-[var(--muted)] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-[var(--ink)]" />
+                    </a>
+                  </li>
                 ))}
-              </div>
-            </motion.div>
-            <motion.div
-              className="rounded-[2rem] border border-zinc-200/60 bg-gradient-to-br from-white via-zinc-50/30 to-white p-8 shadow-xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950/50 dark:via-zinc-900/30 dark:to-zinc-950/50"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                Operating style
-              </div>
-              <p className="mt-5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-300">
-                I ship iteratively, prioritize clarity, and keep a bias for
-                measurable outcomes. I&apos;m equally comfortable in roadmap
-                debates and scaling services in production.
-              </p>
-            </motion.div>
+              </ul>
+            </FadeUp>
           </div>
-        </motion.section>
+        </div>
+      </section>
 
-        <motion.section
-          id="skills"
-          className="space-y-10"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <motion.div
-            className="flex flex-wrap items-end justify-between gap-6"
-            variants={fadeUp}
-          >
+      {/* ============================================================ */}
+      {/*  FOOTER / COLOPHON                                             */}
+      {/* ============================================================ */}
+      <footer className="border-t border-[var(--line)] bg-[var(--bg)]">
+        <div className="mx-auto w-full max-w-container px-6 py-14 md:px-10">
+          <div className="grid gap-10 md:grid-cols-[1fr_1fr_1fr_auto]">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                Skills
-              </div>
-              <h2 className="mt-4 bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-                Tools I rely on
-              </h2>
+              <div className="mono text-[var(--muted)]">Index</div>
+              <ul className="mt-4 space-y-2 text-[14px]">
+                {[
+                  ["Work", "#work"],
+                  ["About", "#about"],
+                  ["Principles", "#principles"],
+                  ["Experience", "#experience"],
+                  ["Stack", "#stack"],
+                  ["Contact", "#contact"],
+                ].map(([l, h]) => (
+                  <li key={h}>
+                    <a href={h} className="link-underline">
+                      {l}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <span className="rounded-full border border-zinc-200/60 bg-white/80 px-4 py-2 text-sm font-semibold text-zinc-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
-              Product, engineering, execution
-            </span>
-          </motion.div>
-          <motion.div
-            className="flex flex-wrap gap-3"
-            variants={stagger}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-          >
-            {skills.map((skill, idx) => (
-              <motion.span
-                key={skill}
-                className="rounded-full border border-zinc-200/60 bg-gradient-to-br from-white to-zinc-50/50 px-5 py-2.5 text-sm font-semibold text-zinc-700 shadow-lg shadow-zinc-900/5 transition-all hover:scale-110 hover:border-zinc-300 hover:shadow-xl hover:shadow-zinc-900/10 dark:border-white/10 dark:from-zinc-950/70 dark:to-zinc-900/50 dark:text-zinc-200 dark:hover:border-white/20"
-                variants={fadeUp}
-                whileHover={{ y: -4 }}
-              >
-                {skill}
-              </motion.span>
-            ))}
-          </motion.div>
-        </motion.section>
-
-        <motion.section
-          id="contact"
-          className="relative overflow-hidden rounded-[2.5rem] border border-zinc-200/50 bg-gradient-to-br from-white via-zinc-50/30 to-white p-12 shadow-2xl shadow-zinc-900/5 dark:border-white/10 dark:from-zinc-950 dark:via-zinc-900/50 dark:to-zinc-950 dark:shadow-zinc-950/50 lg:p-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.1),transparent_70%)] dark:bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.15),transparent_70%)]" />
-          <motion.div
-            className="relative flex flex-col items-start justify-between gap-8 md:flex-row md:items-center"
-            variants={fadeUp}
-          >
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.4em] text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-950/30 dark:text-emerald-200">
-                Contact
-              </div>
-              <h2 className="bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-4xl font-bold text-transparent dark:from-white dark:to-zinc-300">
-                Let&apos;s build something ambitious.
-              </h2>
-              <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-                Reach out for product engineering, AI platforms, or infrastructure
-                work.
+            <div>
+              <div className="mono text-[var(--muted)]">Elsewhere</div>
+              <ul className="mt-4 space-y-2 text-[14px]">
+                <li>
+                  <a
+                    href={GITHUB}
+                    className="link-underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    GitHub / tensorajat
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={LINKEDIN}
+                    className="link-underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    LinkedIn / rajat7raghav
+                  </a>
+                </li>
+                <li>
+                  <a href={`mailto:${EMAIL}`} className="link-underline">
+                    {EMAIL}
+                  </a>
+                </li>
+                <li>
+                  <a href={RESUME} download className="link-underline">
+                    Résumé (PDF)
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <div className="mono text-[var(--muted)]">Colophon</div>
+              <p className="mt-4 text-[13px] leading-[1.6] text-[var(--ink-soft)]">
+                Set in <span className="italic-serif">Fraunces</span> &{" "}
+                <span className="italic-serif">Inter</span>. Built with Next.js,
+                Tailwind, Framer Motion. Hand-tuned in a terminal, not a
+                template.
               </p>
             </div>
-            <div className="flex flex-wrap gap-4">
-              <motion.a
-                href="mailto:hello@yourdomain.com"
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-zinc-900 to-zinc-800 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-zinc-900/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-zinc-900/30 dark:from-white dark:to-zinc-100 dark:text-zinc-900 dark:shadow-white/10 dark:hover:shadow-white/20"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                hello@yourdomain.com
-              </motion.a>
-              <motion.a
-                href="https://cal.com/your-handle"
-                className="rounded-full border-2 border-zinc-300 bg-white/80 px-6 py-3 text-sm font-semibold text-zinc-700 backdrop-blur-sm transition-all hover:border-zinc-400 hover:bg-white hover:shadow-lg dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/10"
-                target="_blank"
-                rel="noreferrer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Book a call
-              </motion.a>
+            <div className="text-right md:text-left">
+              <div className="mono text-[var(--muted)]">Now</div>
+              <div className="mono mt-4 text-[var(--ink)]">
+                <LiveClock timeZone="Asia/Kolkata" label="IST" />
+              </div>
             </div>
-          </motion.div>
-        </motion.section>
-      </main>
+          </div>
 
-      <footer className="border-t border-zinc-200/70 py-8 dark:border-white/5">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-6 text-xs text-zinc-500 sm:flex-row">
-          <span>© 2026 Rajat. All rights reserved.</span>
-          <div className="flex items-center gap-4 text-zinc-500">
-            <a
-              href="https://github.com/your-handle"
-              className="transition hover:text-zinc-900 dark:hover:text-zinc-300"
-              target="_blank"
-              rel="noreferrer"
-            >
-              GitHub
-            </a>
-            <a
-              href="https://www.linkedin.com/in/your-handle"
-              className="transition hover:text-zinc-900 dark:hover:text-zinc-300"
-              target="_blank"
-              rel="noreferrer"
-            >
-              LinkedIn
-            </a>
-            <a
-              href="mailto:hello@yourdomain.com"
-              className="transition hover:text-zinc-900 dark:hover:text-zinc-300"
-            >
-              Email
-            </a>
+          <div className="mt-14 flex flex-wrap items-end justify-between gap-6 border-t border-[var(--line)] pt-6">
+            <div className="font-display text-[clamp(3.2rem,10vw,9rem)] leading-[0.85] text-[var(--ink)]">
+              Rajat&nbsp;
+              <span className="italic-serif">Raghav</span>
+              <span className="text-[var(--accent)]">.</span>
+            </div>
+            <div className="mono text-[var(--muted)]">
+              © {new Date().getFullYear()} · All rights reserved
+            </div>
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/*  Project row                                                        */
+/* ================================================================== */
+
+function ProjectRow({
+  project,
+  index,
+  active,
+  onEnter,
+  onLeave,
+}: {
+  project: Project;
+  index: number;
+  active: boolean;
+  onEnter: () => void;
+  onLeave: () => void;
+}) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 }}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      onFocus={onEnter}
+      onBlur={onLeave}
+      className="group relative py-10 md:py-14"
+    >
+      <motion.div
+        aria-hidden
+        initial={false}
+        animate={{ scaleX: active ? 1 : 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        style={{ transformOrigin: "left center" }}
+        className={`pointer-events-none absolute inset-0 -z-0 bg-gradient-to-r ${project.accent} opacity-[0.08]`}
+      />
+
+      <div className="relative grid grid-cols-1 items-start gap-6 md:grid-cols-[90px_1.15fr_0.85fr_auto] md:gap-10">
+        <div className="mono pt-2 text-[var(--muted)]">{project.n}</div>
+
+        <div>
+          <div className="mono mb-3 text-[var(--muted)]">{project.kind}</div>
+          <h3 className="editorial text-[clamp(2rem,5vw,3.4rem)] leading-[0.98]">
+            <span className="relative inline-block">
+              {project.title}
+              <motion.span
+                aria-hidden
+                initial={false}
+                animate={{ width: active ? "100%" : "0%" }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute -bottom-1 left-0 h-[3px] bg-[var(--accent)]"
+              />
+            </span>
+          </h3>
+          <div className="mt-1 text-[14px] italic-serif text-[var(--muted)]">
+            {project.subtitle}
+          </div>
+          <p className="mt-5 max-w-xl text-[15px] leading-[1.6] text-[var(--ink-soft)]">
+            {project.summary}
+          </p>
+          <motion.div
+            initial={false}
+            animate={{
+              height: active ? "auto" : 0,
+              opacity: active ? 1 : 0,
+            }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <ul className="mt-5 space-y-2 border-t border-[var(--line)] pt-5 text-[13.5px] leading-[1.55] text-[var(--ink-soft)]">
+              {project.highlights.map((h) => (
+                <li key={h} className="flex gap-3">
+                  <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-[var(--accent)]" />
+                  <span>{h}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5 grid max-w-2xl grid-cols-3 gap-4">
+              {project.metrics.map(([v, l]) => (
+                <div key={l}>
+                  <div className="font-display text-[26px] leading-none text-[var(--ink)]">
+                    {v}
+                  </div>
+                  <div className="mono mt-2 text-[10px] text-[var(--muted)]">
+                    {l}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {project.stack.map((s) => (
+                <span key={s} className="chip">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="hidden md:block">
+          <ProjectVisual kind={project.visual} active={active} />
+        </div>
+
+        <div className="flex flex-col items-start gap-4 md:items-end md:text-right">
+          <div className="mono text-[var(--muted)]">{project.year}</div>
+          <div className="mono text-[var(--muted-strong)]">{project.role}</div>
+          <motion.div
+            animate={{ x: active ? 4 : 0, y: active ? -4 : 0 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[var(--line)] bg-[var(--surface)] text-[var(--ink)]"
+          >
+            <ArrowUpRight className="h-4 w-4" />
+          </motion.div>
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+/* ================================================================== */
+/*  Project key visual                                                  */
+/* ================================================================== */
+
+function ProjectVisual({
+  kind,
+  active,
+}: {
+  kind: Project["visual"];
+  active: boolean;
+}) {
+  const stroke = "var(--ink-soft)";
+  const accent = "var(--accent)";
+
+  return (
+    <div className="relative h-28 w-full overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--surface-muted)]">
+      <motion.div
+        className="absolute inset-0"
+        initial={false}
+        animate={{ opacity: active ? 1 : 0.55 }}
+        transition={{ duration: 0.5 }}
+      >
+        <svg viewBox="0 0 200 112" className="h-full w-full" fill="none">
+          {kind === "graph" && (
+            <g>
+              <line x1="28" y1="56" x2="100" y2="32" stroke={stroke} strokeWidth="0.8" />
+              <line x1="28" y1="56" x2="100" y2="80" stroke={stroke} strokeWidth="0.8" />
+              <line x1="100" y1="32" x2="172" y2="56" stroke={stroke} strokeWidth="0.8" />
+              <line x1="100" y1="80" x2="172" y2="56" stroke={stroke} strokeWidth="0.8" />
+              <motion.line
+                x1="28" y1="56" x2="172" y2="56"
+                stroke={accent} strokeWidth="1.2" strokeDasharray="2 3"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: active ? 1 : 0 }}
+                transition={{ duration: 1 }}
+              />
+              <circle cx="28" cy="56" r="6" fill="var(--bg)" stroke={stroke} />
+              <circle cx="100" cy="32" r="6" fill="var(--bg)" stroke={stroke} />
+              <circle cx="100" cy="80" r="6" fill="var(--bg)" stroke={stroke} />
+              <circle cx="172" cy="56" r="6" fill={accent} />
+            </g>
+          )}
+
+          {kind === "loop" && (
+            <g>
+              <motion.circle
+                cx="100" cy="56" r="38"
+                stroke={stroke} strokeWidth="0.8" strokeDasharray="3 3"
+                fill="none"
+                animate={{ rotate: active ? 360 : 0 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                style={{ originX: "100px", originY: "56px" }}
+              />
+              <circle cx="100" cy="18" r="5" fill={accent} />
+              <circle cx="138" cy="56" r="4" fill={stroke} />
+              <circle cx="100" cy="94" r="4" fill={stroke} />
+              <circle cx="62" cy="56" r="4" fill={stroke} />
+              <text x="100" y="60" textAnchor="middle" fontSize="9"
+                fill={stroke} className="font-[ui-monospace]">
+                loop
+              </text>
+            </g>
+          )}
+
+          {kind === "stack" && (
+            <g>
+              {[0, 1, 2, 3].map((i) => (
+                <motion.rect
+                  key={i}
+                  x={30} y={20 + i * 18}
+                  width={140} height={12} rx={2}
+                  stroke={stroke} strokeWidth="0.8"
+                  fill={i === 3 ? accent : "transparent"}
+                  initial={{ x: 30 }}
+                  animate={{ x: active ? 30 + (i % 2 === 0 ? 0 : 6) : 30 }}
+                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                />
+              ))}
+            </g>
+          )}
+
+          {kind === "bars" && (
+            <g>
+              {[22, 54, 38, 68, 46, 60, 32, 78, 50, 40].map((h, i) => (
+                <motion.rect
+                  key={i}
+                  x={20 + i * 16}
+                  width={10}
+                  y={100 - h}
+                  height={h}
+                  rx={1}
+                  fill={i === 7 ? accent : stroke}
+                  opacity={0.85}
+                  initial={{ scaleY: 0.2 }}
+                  animate={{ scaleY: active ? 1 : 0.55 }}
+                  transition={{ duration: 0.5, delay: i * 0.03 }}
+                  style={{ transformOrigin: `${25 + i * 16}px 100px` }}
+                />
+              ))}
+            </g>
+          )}
+        </svg>
+      </motion.div>
     </div>
   );
 }
